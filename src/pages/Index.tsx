@@ -6,13 +6,10 @@ import UseCaseCard from '../components/UseCaseCard';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiService, UserProfile, UseCaseSummary } from '../services/api';
-import { Search, Filter } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
 
   // Mock authentication - in real app this would come from auth provider
@@ -26,12 +23,9 @@ const Index = () => {
   });
 
   // Fetch use cases
-  const { data: useCases = [], isLoading: isLoadingUseCases, refetch } = useQuery({
-    queryKey: ['use-cases', { search: searchTerm, status: statusFilter }],
-    queryFn: () => apiService.fetchUseCases({
-      search: searchTerm || undefined,
-      status: statusFilter || undefined,
-    }),
+  const { data: useCases = [], isLoading: isLoadingUseCases } = useQuery({
+    queryKey: ['use-cases'],
+    queryFn: () => apiService.fetchUseCases(),
     enabled: isAuthenticated,
   });
 
@@ -98,7 +92,6 @@ const Index = () => {
       const isFavorite = favorites.includes(useCaseId);
       
       if (isFavorite) {
-        // Remove from favorites (API endpoint not in swagger, but implied)
         setFavorites(prev => prev.filter(id => id !== useCaseId));
       } else {
         await apiService.addToFavorites(user.id, useCaseId);
@@ -153,48 +146,18 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <Header user={user} onLogout={handleLogout} />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Welcome Message */}
-        {user && (
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user.displayName}!
-            </h1>
-            <p className="text-gray-600">
-              Discover and access your authorized AI applications below.
-            </p>
-          </div>
-        )}
-
-        {/* Search and Filters */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              type="text"
-              placeholder="Search applications..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
-            />
-          </div>
-          
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="beta">Beta</option>
-              <option value="deprecated">Deprecated</option>
-            </select>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Bienvenue sur le portail <span className="text-red-600">GAÏA</span>
+          </h1>
+          <h2 className="text-xl text-gray-700 font-medium">
+            Vos Assistants
+          </h2>
         </div>
 
         {/* Use Cases Grid */}
@@ -205,9 +168,8 @@ const Index = () => {
         ) : useCases.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500 mb-4">
-              <Search className="h-12 w-12 mx-auto mb-4" />
               <h3 className="text-lg font-medium">No applications found</h3>
-              <p>Try adjusting your search or filter criteria.</p>
+              <p>No use cases are currently available.</p>
             </div>
           </div>
         ) : (
