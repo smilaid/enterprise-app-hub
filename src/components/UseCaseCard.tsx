@@ -49,14 +49,14 @@ const UseCaseCard = ({ useCase, isFavorite = false, onAccess, onGuide, onToggleF
           onClick={() => onGuide(useCase.id)}
           className="flex-1 flex items-center justify-center px-4 py-2 border-2 border-red-600 rounded-md text-sm font-medium text-red-600 bg-white hover:bg-red-50 transition-colors"
         >
-          Guide >
+          Guide {'>'}
         </button>
         
         <button
           onClick={() => onAccess(useCase.id)}
           className="flex-1 flex items-center justify-center px-4 py-2 border-2 border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
         >
-          Utiliser >
+          Utiliser {'>'}
         </button>
       </div>
     </div>
