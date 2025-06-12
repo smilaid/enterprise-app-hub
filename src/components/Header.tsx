@@ -3,6 +3,12 @@ import React from 'react';
 import { User, LogOut, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserProfile } from '../services/api';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   user?: UserProfile;
@@ -45,23 +51,53 @@ const Header = ({ user, onLogout }: HeaderProps) => {
             {/* User Profile */}
             <div className="flex items-center space-x-4">
               {user && (
-                <div className="flex items-center space-x-3">
-                  <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center border">
-                    <User className="h-4 w-4 text-gray-600" />
-                  </div>
-                  <div className="text-sm">
-                    <p className="text-gray-900 font-medium">{user.displayName}</p>
-                  </div>
-                </div>
-              )}
-              
-              {onLogout && (
-                <button 
-                  onClick={onLogout}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-md"
-                >
-                  <LogOut className="h-5 w-5" />
-                </button>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <button className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors">
+                      <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center border">
+                        <User className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">{user.displayName}</p>
+                      </div>
+                    </button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-64" align="end">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center border">
+                          <User className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{user.displayName}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="text-xs text-gray-400">{user.role}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-3 space-y-2">
+                        <Link to="/profile">
+                          <Button variant="ghost" className="w-full justify-start" size="sm">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Voir le profil
+                          </Button>
+                        </Link>
+                        
+                        {onLogout && (
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" 
+                            size="sm"
+                            onClick={onLogout}
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Se déconnecter
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               )}
             </div>
           </div>

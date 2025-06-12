@@ -10,6 +10,7 @@ import PolitiqueIA from "./pages/PolitiqueIA";
 import Formations from "./pages/Formations";
 import Contact from "./pages/Contact";
 import Aide from "./pages/Aide";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/formations" element={<Formations />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/aide" element={<Aide />} />
+          <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
