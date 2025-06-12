@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
@@ -92,6 +91,7 @@ const Index = () => {
       const isFavorite = favorites.includes(useCaseId);
       
       if (isFavorite) {
+        await apiService.removeFavorite(user.id, useCaseId);
         setFavorites(prev => prev.filter(id => id !== useCaseId));
       } else {
         await apiService.addToFavorites(user.id, useCaseId);

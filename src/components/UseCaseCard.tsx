@@ -19,7 +19,7 @@ const UseCaseCard = ({ useCase, isFavorite = false, onAccess, onGuide, onToggleF
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <span className="text-red-600 text-2xl">📝</span>
+              <span className="text-red-600 text-2xl">{useCase.icon || '🤖'}</span>
             </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900">{useCase.name}</h3>

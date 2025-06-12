@@ -1,0 +1,140 @@
+
+{
+  "users": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "username": "demo_user",
+      "displayName": "Jean Dupont",
+      "email": "jean.dupont@company.com",
+      "role": "user"
+    }
+  ],
+  "useCases": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Rédaction d'emails",
+      "description": "Cet assistant vous aidera à rédiger vos mails et vous conseiller sur les formations de vos phrases.",
+      "status": "active",
+      "scope": "communication",
+      "ownerId": "550e8400-e29b-41d4-a716-446655440000",
+      "guideUrl": "https://example.com/guide/email",
+      "accessUrl": "https://example.com/tools/email",
+      "icon": "📧",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-06-01T14:30:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "Transcription vidéo",
+      "description": "Cet assistant vous permettra d'avoir la transcription textuelle de votre vidéo.",
+      "status": "active",
+      "scope": "media",
+      "ownerId": "550e8400-e29b-41d4-a716-446655440000",
+      "guideUrl": "https://example.com/guide/transcription",
+      "accessUrl": "https://example.com/tools/transcription",
+      "icon": "🎥",
+      "createdAt": "2024-02-10T09:15:00Z",
+      "updatedAt": "2024-05-20T16:45:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": "Rédaction de résumés",
+      "description": "Cet assistant vous réalisera le résumé du contenu que vous lui fournirez.",
+      "status": "active",
+      "scope": "document",
+      "ownerId": "550e8400-e29b-41d4-a716-446655440000",
+      "guideUrl": "https://example.com/guide/summary",
+      "accessUrl": "https://example.com/tools/summary",
+      "icon": "📄",
+      "createdAt": "2024-03-05T11:20:00Z",
+      "updatedAt": "2024-06-10T08:10:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": "Analyse de données",
+      "description": "Cet assistant vous aide à analyser et interpréter vos données complexes pour en extraire des insights.",
+      "status": "active",
+      "scope": "analytics",
+      "ownerId": "550e8400-e29b-41d4-a716-446655440000",
+      "guideUrl": "https://example.com/guide/analytics",
+      "accessUrl": "https://example.com/tools/analytics",
+      "icon": "📊",
+      "createdAt": "2024-04-12T13:45:00Z",
+      "updatedAt": "2024-06-05T10:25:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440005",
+      "name": "Génération de code",
+      "description": "Cet assistant vous aide à générer et optimiser du code dans différents langages de programmation.",
+      "status": "active",
+      "scope": "development",
+      "ownerId": "550e8400-e29b-41d4-a716-446655440000",
+      "guideUrl": "https://example.com/guide/code",
+      "accessUrl": "https://example.com/tools/code",
+      "icon": "💻",
+      "createdAt": "2024-05-08T15:30:00Z",
+      "updatedAt": "2024-06-08T12:15:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440006",
+      "name": "Traduction automatique",
+      "description": "Cet assistant traduit vos documents et textes dans plus de 50 langues avec une haute précision.",
+      "status": "active",
+      "scope": "language",
+      "ownerId": "550e8400-e29b-41d4-a716-446655440000",
+      "guideUrl": "https://example.com/guide/translation",
+      "accessUrl": "https://example.com/tools/translation",
+      "icon": "🌐",
+      "createdAt": "2024-01-20T08:00:00Z",
+      "updatedAt": "2024-06-12T14:20:00Z"
+    }
+  ],
+  "favorites": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440100",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "useCaseId": "550e8400-e29b-41d4-a716-446655440001",
+      "createdAt": "2024-06-01T10:00:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440101",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "useCaseId": "550e8400-e29b-41d4-a716-446655440003",
+      "createdAt": "2024-06-05T14:30:00Z"
+    }
+  ],
+  "recents": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440200",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "useCaseId": "550e8400-e29b-41d4-a716-446655440001",
+      "lastAccessed": "2024-06-12T09:30:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440201",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "useCaseId": "550e8400-e29b-41d4-a716-446655440002",
+      "lastAccessed": "2024-06-11T16:45:00Z"
+    }
+  ],
+  "consumption": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440300",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "useCaseId": "550e8400-e29b-41d4-a716-446655440001",
+      "tokensUsed": 1250,
+      "costEur": 0.025,
+      "carbonKg": 0.0012,
+      "occurredAt": "2024-06-12T09:30:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440301",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "useCaseId": "550e8400-e29b-41d4-a716-446655440002",
+      "tokensUsed": 3500,
+      "costEur": 0.070,
+      "carbonKg": 0.0035,
+      "occurredAt": "2024-06-11T16:45:00Z"
+    }
+  ]
+}
