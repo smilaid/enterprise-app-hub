@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { User, Settings, RotateCcw } from 'lucide-react';
+import { User, Settings, RotateCcw, Download, Trash2 } from 'lucide-react';
 import Header from '../components/Header';
 import { apiService } from '../services/api';
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from '@/hooks/use-toast';
+import { logger, LogCategory } from '../utils/logger';
 
 const Profile = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -21,6 +22,7 @@ const Profile = () => {
   const [showWelcomeOnRefresh, setShowWelcomeOnRefresh] = useState(false);
 
   const handleLogout = () => {
+    logger.info(LogCategory.AUTH, 'Logout from profile page', { userId: user?.id });
     localStorage.removeItem('authToken');
     localStorage.removeItem('hasVisitedPortal');
     setIsAuthenticated(false);
@@ -31,6 +33,7 @@ const Profile = () => {
   };
 
   const handleResetWelcomeMessage = () => {
+    logger.info(LogCategory.USER_ACTION, 'Welcome message reset', { userId: user?.id });
     localStorage.removeItem('hasVisitedPortal');
     toast({
       title: "Paramètres réinitialisés",
@@ -39,6 +42,7 @@ const Profile = () => {
   };
 
   const handleToggleWelcomeMessage = (checked: boolean) => {
+    logger.info(LogCategory.USER_ACTION, 'Welcome message toggle', { checked, userId: user?.id });
     setShowWelcomeOnRefresh(checked);
     if (checked) {
       localStorage.removeItem('hasVisitedPortal');
@@ -53,6 +57,43 @@ const Profile = () => {
         description: "Le message de bienvenue ne s'affichera plus.",
       });
     }
+  };
+
+  const handleExportLogs = () => {
+    logger.info(LogCategory.USER_ACTION, 'Log export initiated', { userId: user?.id });
+    try {
+      const logs = logger.exportLogs();
+      const blob = new Blob([logs], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gaia-logs-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Logs exportés",
+        description: "Les logs ont été téléchargés avec succès.",
+      });
+    } catch (error) {
+      logger.error(LogCategory.SYSTEM, 'Failed to export logs', { error, userId: user?.id });
+      toast({
+        title: "Erreur",
+        description: "Impossible d'exporter les logs.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClearLogs = () => {
+    logger.info(LogCategory.USER_ACTION, 'Log clear initiated', { userId: user?.id });
+    logger.clearLogs();
+    toast({
+      title: "Logs supprimés",
+      description: "Tous les logs ont été supprimés.",
+    });
   };
 
   if (!isAuthenticated) {
@@ -81,6 +122,9 @@ const Profile = () => {
       </div>
     );
   }
+
+  // Check if user is admin (for advanced features)
+  const isAdmin = user.role === 'admin' || user.role === 'super_admin';
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -151,6 +195,35 @@ const Profile = () => {
                   </Button>
                 </div>
               </div>
+
+              {isAdmin && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-medium text-blue-900 mb-3">Gestion des logs (Admin)</h3>
+                  <p className="text-sm text-blue-800 mb-4">
+                    Exporter ou supprimer les logs de l'application pour le débogage et la surveillance.
+                  </p>
+                  <div className="flex space-x-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleExportLogs}
+                      className="flex items-center space-x-1"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Exporter logs</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleClearLogs}
+                      className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Vider logs</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

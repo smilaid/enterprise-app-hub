@@ -3,6 +3,7 @@ import React from 'react';
 import { User, LogOut, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserProfile } from '../services/api';
+import { logger, LogCategory } from '../utils/logger';
 import {
   HoverCard,
   HoverCardContent,
@@ -16,13 +17,32 @@ interface HeaderProps {
 }
 
 const Header = ({ user, onLogout }: HeaderProps) => {
+  const handleNavClick = (destination: string) => {
+    logger.info(LogCategory.NAVIGATION, 'Navigation link clicked', { destination, userId: user?.id });
+  };
+
+  const handleProfileView = () => {
+    logger.info(LogCategory.USER_ACTION, 'Profile view initiated', { userId: user?.id });
+  };
+
+  const handleLogoutClick = () => {
+    logger.info(LogCategory.AUTH, 'Logout button clicked', { userId: user?.id });
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
   return (
     <header className="bg-white border-b border-gray-300 shadow-sm">
       <div className="max-w-full mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo on the left */}
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold text-red-600 hover:text-red-700">
+            <Link 
+              to="/" 
+              className="text-2xl font-bold text-red-600 hover:text-red-700"
+              onClick={() => handleNavClick('home')}
+            >
               GAÏA
             </Link>
           </div>
@@ -31,19 +51,39 @@ const Header = ({ user, onLogout }: HeaderProps) => {
           <div className="flex items-center space-x-8">
             {/* Navigation Menu */}
             <nav className="flex space-x-8">
-              <Link to="/actualites" className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium">
+              <Link 
+                to="/actualites" 
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                onClick={() => handleNavClick('actualites')}
+              >
                 Actualités
               </Link>
-              <Link to="/politique-ia" className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium">
+              <Link 
+                to="/politique-ia" 
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                onClick={() => handleNavClick('politique-ia')}
+              >
                 Politique IA
               </Link>
-              <Link to="/formations" className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium">
+              <Link 
+                to="/formations" 
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                onClick={() => handleNavClick('formations')}
+              >
                 Formations
               </Link>
-              <Link to="/contact" className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium">
+              <Link 
+                to="/contact" 
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                onClick={() => handleNavClick('contact')}
+              >
                 Contact
               </Link>
-              <Link to="/aide" className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium">
+              <Link 
+                to="/aide" 
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                onClick={() => handleNavClick('aide')}
+              >
                 Aide
               </Link>
             </nav>
@@ -76,7 +116,7 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                       </div>
                       
                       <div className="border-t pt-3 space-y-2">
-                        <Link to="/profile">
+                        <Link to="/profile" onClick={handleProfileView}>
                           <Button variant="ghost" className="w-full justify-start" size="sm">
                             <Settings className="h-4 w-4 mr-2" />
                             Voir le profil
@@ -88,7 +128,7 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                             variant="ghost" 
                             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" 
                             size="sm"
-                            onClick={onLogout}
+                            onClick={handleLogoutClick}
                           >
                             <LogOut className="h-4 w-4 mr-2" />
                             Se déconnecter

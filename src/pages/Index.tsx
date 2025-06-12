@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
@@ -6,12 +7,13 @@ import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiService, UserProfile, UseCaseSummary } from '../services/api';
 import { toast } from '@/hooks/use-toast';
+import { logger, LogCategory } from '../utils/logger';
 
 const Index = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  // Mock authentication - in real app this would come from auth provider
+  // Authentication state - in real app this would come from auth provider
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   // Fetch user profile
@@ -37,33 +39,43 @@ const Index = () => {
 
   useEffect(() => {
     setFavorites(userFavorites);
+    logger.debug(LogCategory.UI, 'Favorites updated', { count: userFavorites.length });
   }, [userFavorites]);
 
   // Check if this is the user's first visit
   useEffect(() => {
     const hasVisited = localStorage.getItem('hasVisitedPortal');
     if (!hasVisited && user) {
+      logger.info(LogCategory.UI, 'First visit detected, showing welcome modal', { userId: user.id });
       setShowWelcomeModal(true);
       localStorage.setItem('hasVisitedPortal', 'true');
     }
   }, [user]);
 
   const handleAccess = async (useCaseId: string) => {
-    if (!user) return;
+    if (!user) {
+      logger.warn(LogCategory.USER_ACTION, 'Access attempt without authenticated user', { useCaseId });
+      return;
+    }
+
+    logger.info(LogCategory.USER_ACTION, 'Use case access initiated', { useCaseId, userId: user.id });
 
     try {
       await apiService.logUseCaseAccess(useCaseId, user.id);
       const useCase = useCases.find(uc => uc.id === useCaseId);
       
       if (useCase?.accessUrl) {
+        logger.info(LogCategory.NAVIGATION, 'Opening external URL', { url: useCase.accessUrl, useCaseId });
         window.open(useCase.accessUrl, '_blank');
       } else {
+        logger.warn(LogCategory.UI, 'No access URL configured for use case', { useCaseId });
         toast({
           title: "Access Tool",
           description: "Opening application...",
         });
       }
     } catch (error) {
+      logger.error(LogCategory.USER_ACTION, 'Failed to access use case', { error, useCaseId, userId: user.id });
       toast({
         title: "Error",
         description: "Failed to access the tool. Please try again.",
@@ -73,10 +85,13 @@ const Index = () => {
   };
 
   const handleGuide = (useCaseId: string) => {
+    logger.info(LogCategory.USER_ACTION, 'Guide access initiated', { useCaseId });
     const useCase = useCases.find(uc => uc.id === useCaseId);
     if (useCase?.guideUrl) {
+      logger.info(LogCategory.NAVIGATION, 'Opening guide URL', { url: useCase.guideUrl, useCaseId });
       window.open(useCase.guideUrl, '_blank');
     } else {
+      logger.warn(LogCategory.UI, 'No guide URL configured for use case', { useCaseId });
       toast({
         title: "Guide",
         description: "Opening user guide...",
@@ -85,11 +100,15 @@ const Index = () => {
   };
 
   const handleToggleFavorite = async (useCaseId: string) => {
-    if (!user) return;
+    if (!user) {
+      logger.warn(LogCategory.USER_ACTION, 'Favorite toggle attempt without authenticated user', { useCaseId });
+      return;
+    }
+
+    const isFavorite = favorites.includes(useCaseId);
+    logger.info(LogCategory.USER_ACTION, 'Toggling favorite', { useCaseId, userId: user.id, isFavorite });
 
     try {
-      const isFavorite = favorites.includes(useCaseId);
-      
       if (isFavorite) {
         await apiService.removeFavorite(user.id, useCaseId);
         setFavorites(prev => prev.filter(id => id !== useCaseId));
@@ -103,6 +122,7 @@ const Index = () => {
         description: `Use case ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
       });
     } catch (error) {
+      logger.error(LogCategory.USER_ACTION, 'Failed to toggle favorite', { error, useCaseId, userId: user.id });
       toast({
         title: "Error",
         description: "Failed to update favorites. Please try again.",
@@ -112,22 +132,29 @@ const Index = () => {
   };
 
   const handleLogout = () => {
+    logger.info(LogCategory.AUTH, 'User logout initiated', { userId: user?.id });
     localStorage.removeItem('authToken');
     localStorage.removeItem('hasVisitedPortal');
     setIsAuthenticated(false);
+    logger.info(LogCategory.AUTH, 'User logged out successfully');
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
     });
   };
 
+  // Handle unauthenticated state
   if (!isAuthenticated) {
+    logger.debug(LogCategory.AUTH, 'User not authenticated, showing login screen');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to access the portal</h1>
           <button
-            onClick={() => setIsAuthenticated(true)}
+            onClick={() => {
+              logger.info(LogCategory.AUTH, 'Demo login initiated');
+              setIsAuthenticated(true);
+            }}
             className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors"
           >
             Login (Demo)
@@ -137,13 +164,21 @@ const Index = () => {
     );
   }
 
+  // Handle loading state
   if (isLoadingUser) {
+    logger.debug(LogCategory.UI, 'Loading user profile');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
+
+  logger.debug(LogCategory.UI, 'Rendering main dashboard', { 
+    useCaseCount: useCases.length, 
+    favoriteCount: favorites.length,
+    isLoading: isLoadingUseCases 
+  });
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -190,7 +225,10 @@ const Index = () => {
 
       <WelcomeModal
         isOpen={showWelcomeModal}
-        onClose={() => setShowWelcomeModal(false)}
+        onClose={() => {
+          logger.info(LogCategory.UI, 'Welcome modal closed');
+          setShowWelcomeModal(false);
+        }}
         userName={user?.displayName}
       />
     </div>
