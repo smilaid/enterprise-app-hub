@@ -1,72 +1,64 @@
 
-import React from 'react';
-import { Calendar, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
+import { apiService } from '../services/api';
+import { toast } from '@/hooks/use-toast';
 
 const Actualites = () => {
-  const articles = [
-    {
-      id: 1,
-      title: "Nouvelle mise à jour de la plateforme GAÏA",
-      excerpt: "Découvrez les dernières fonctionnalités ajoutées à notre plateforme d'intelligence artificielle.",
-      date: "2024-06-10",
-      author: "Équipe GAÏA",
-      readTime: "3 min"
-    },
-    {
-      id: 2,
-      title: "Guide d'utilisation des nouveaux outils IA",
-      excerpt: "Un guide complet pour tirer le meilleur parti des derniers outils d'intelligence artificielle disponibles.",
-      date: "2024-06-08",
-      author: "Support GAÏA",
-      readTime: "5 min"
-    },
-    {
-      id: 3,
-      title: "Amélioration des performances du système",
-      excerpt: "Nous avons optimisé nos serveurs pour une expérience utilisateur encore plus fluide.",
-      date: "2024-06-05",
-      author: "Équipe Technique",
-      readTime: "2 min"
-    }
-  ];
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  
+  // Fetch user profile for header
+  const { data: user } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: apiService.fetchUserProfile,
+    enabled: isAuthenticated,
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('hasVisitedPortal');
+    setIsAuthenticated(false);
+    toast({
+      title: "Déconnecté",
+      description: "Vous avez été déconnecté avec succès.",
+    });
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Veuillez vous connecter</h1>
+          <button
+            onClick={() => setIsAuthenticated(true)}
+            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors"
+          >
+            Connexion (Demo)
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header />
+      <Header user={user} onLogout={handleLogout} />
       
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Actualités</h1>
-          <p className="text-gray-600">Restez informé des dernières nouveautés de la plateforme GAÏA</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Actualités
+          </h1>
+          <p className="text-gray-600">
+            Restez informé des dernières nouvelles et mises à jour.
+          </p>
         </div>
 
-        <div className="space-y-6">
-          {articles.map((article) => (
-            <article key={article.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-              <h2 className="text-xl font-semibold text-gray-900 mb-3 hover:text-red-600 cursor-pointer">
-                {article.title}
-              </h2>
-              
-              <p className="text-gray-600 mb-4 leading-relaxed">
-                {article.excerpt}
-              </p>
-              
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(article.date).toLocaleDateString('fr-FR')}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <User className="h-4 w-4" />
-                    <span>{article.author}</span>
-                  </div>
-                </div>
-                <span className="text-red-600 font-medium">{article.readTime} de lecture</span>
-              </div>
-            </article>
-          ))}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <p className="text-gray-500">
+            Contenu des actualités à venir...
+          </p>
         </div>
       </main>
     </div>
