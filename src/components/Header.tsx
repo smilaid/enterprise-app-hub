@@ -33,15 +33,16 @@ const Header = ({ user, onLogout }: HeaderProps) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-300 shadow-sm">
+    <header className="bg-white border-b border-gray-300 shadow-sm" role="banner">
       <div className="max-w-full mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo on the left */}
           <div className="flex items-center">
             <Link 
               to="/" 
-              className="text-2xl font-bold text-red-600 hover:text-red-700"
+              className="text-2xl font-bold text-red-600 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm"
               onClick={() => handleNavClick('home')}
+              aria-label="Retourner à l'accueil GAÏA"
             >
               GAÏA
             </Link>
@@ -50,38 +51,38 @@ const Header = ({ user, onLogout }: HeaderProps) => {
           {/* Navigation Menu and User Profile on the right */}
           <div className="flex items-center space-x-8">
             {/* Navigation Menu */}
-            <nav className="flex space-x-8">
+            <nav className="flex space-x-8" role="navigation" aria-label="Navigation principale">
               <Link 
                 to="/actualites" 
-                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm"
                 onClick={() => handleNavClick('actualites')}
               >
                 Actualités
               </Link>
               <Link 
                 to="/politique-ia" 
-                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm"
                 onClick={() => handleNavClick('politique-ia')}
               >
                 Politique IA
               </Link>
               <Link 
                 to="/formations" 
-                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm"
                 onClick={() => handleNavClick('formations')}
               >
                 Formations
               </Link>
               <Link 
                 to="/contact" 
-                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm"
                 onClick={() => handleNavClick('contact')}
               >
                 Contact
               </Link>
               <Link 
                 to="/aide" 
-                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium"
+                className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm"
                 onClick={() => handleNavClick('aide')}
               >
                 Aide
@@ -93,8 +94,11 @@ const Header = ({ user, onLogout }: HeaderProps) => {
               {user && (
                 <HoverCard>
                   <HoverCardTrigger asChild>
-                    <button className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors">
-                      <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center border">
+                    <button 
+                      className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                      aria-label={`Menu utilisateur de ${user.displayName}`}
+                    >
+                      <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center border" aria-hidden="true">
                         <User className="h-4 w-4 text-gray-600" />
                       </div>
                       <div className="text-sm">
@@ -105,7 +109,7 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                   <HoverCardContent className="w-64" align="end">
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center border">
+                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center border" aria-hidden="true">
                           <User className="h-5 w-5 text-gray-600" />
                         </div>
                         <div>
@@ -118,7 +122,7 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                       <div className="border-t pt-3 space-y-2">
                         <Link to="/profile" onClick={handleProfileView}>
                           <Button variant="ghost" className="w-full justify-start" size="sm">
-                            <Settings className="h-4 w-4 mr-2" />
+                            <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
                             Voir le profil
                           </Button>
                         </Link>
@@ -129,8 +133,9 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" 
                             size="sm"
                             onClick={handleLogoutClick}
+                            aria-label="Se déconnecter de l'application"
                           >
-                            <LogOut className="h-4 w-4 mr-2" />
+                            <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
                             Se déconnecter
                           </Button>
                         )}

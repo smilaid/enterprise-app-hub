@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
 import UseCaseCard from '../components/UseCaseCard';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SkipLink from '../components/SkipLink';
 import { apiService, UseCaseSummary } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -130,6 +132,7 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" />
+        <span className="sr-only">Chargement de l'authentification...</span>
       </div>
     );
   }
@@ -139,13 +142,15 @@ const Index = () => {
     logger.debug(LogCategory.AUTH, 'User not authenticated, showing login screen');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <SkipLink />
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to access the portal</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Veuillez vous connecter pour accéder au portail</h1>
           <button
             onClick={login}
-            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors"
+            className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            aria-label="Se connecter à l'application"
           >
-            Login
+            Se connecter
           </button>
         </div>
       </div>
@@ -160,9 +165,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <SkipLink />
       <Header user={user} onLogout={logout} />
       
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main id="main-content" className="max-w-6xl mx-auto px-6 py-8" role="main">
         {/* Welcome Message */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -177,27 +183,31 @@ const Index = () => {
         {isLoadingUseCases ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner size="lg" />
+            <span className="sr-only">Chargement des applications...</span>
           </div>
         ) : useCases.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500 mb-4">
-              <h3 className="text-lg font-medium">No applications found</h3>
-              <p>No use cases are currently available.</p>
+              <h3 className="text-lg font-medium">Aucune application trouvée</h3>
+              <p>Aucun cas d'usage n'est actuellement disponible.</p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {useCases.map((useCase) => (
-              <UseCaseCard
-                key={useCase.id}
-                useCase={useCase}
-                isFavorite={favorites.includes(useCase.id)}
-                onAccess={handleAccess}
-                onGuide={handleGuide}
-                onToggleFavorite={handleToggleFavorite}
-              />
-            ))}
-          </div>
+          <section aria-labelledby="applications-heading">
+            <h2 id="applications-heading" className="sr-only">Liste des applications disponibles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {useCases.map((useCase) => (
+                <UseCaseCard
+                  key={useCase.id}
+                  useCase={useCase}
+                  isFavorite={favorites.includes(useCase.id)}
+                  onAccess={handleAccess}
+                  onGuide={handleGuide}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ))}
+            </div>
+          </section>
         )}
       </main>
 

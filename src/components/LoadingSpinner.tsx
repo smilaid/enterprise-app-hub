@@ -14,7 +14,13 @@ const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerProps) =>
   };
 
   return (
-    <div className={`animate-spin rounded-full border-2 border-gray-300 border-t-red-600 ${sizeClasses[size]} ${className}`}></div>
+    <div 
+      className={`animate-spin rounded-full border-2 border-gray-300 border-t-red-600 ${sizeClasses[size]} ${className}`}
+      role="status"
+      aria-label="Chargement en cours"
+    >
+      <span className="sr-only">Chargement...</span>
+    </div>
   );
 };
 
