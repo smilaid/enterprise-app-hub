@@ -1,0 +1,29 @@
+
+{
+  "users": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "username": "demo.user",
+      "email": "demo.user@example.com",
+      "displayName": "Demo User",
+      "role": "user",
+      "groups": ["users", "portal-access"]
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "username": "admin.user",
+      "email": "admin.user@example.com",
+      "displayName": "Admin User",
+      "role": "admin",
+      "groups": ["users", "admins", "portal-access"]
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "username": "john.doe",
+      "email": "john.doe@example.com",
+      "displayName": "John Doe",
+      "role": "user",
+      "groups": ["users", "portal-access", "beta-testers"]
+    }
+  ]
+}

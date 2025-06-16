@@ -2,7 +2,7 @@
 import React from 'react';
 import { User, LogOut, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { UserProfile } from '../services/api';
+import { AuthUser } from '../services/authService';
 import { logger, LogCategory } from '../utils/logger';
 import {
   HoverCard,
@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
-  user?: UserProfile;
+  user?: AuthUser;
   onLogout?: () => void;
 }
 

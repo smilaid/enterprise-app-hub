@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
 import UseCaseCard from '../components/UseCaseCard';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { apiService, UserProfile, UseCaseSummary } from '../services/api';
+import { apiService, UseCaseSummary } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { logger, LogCategory } from '../utils/logger';
 
@@ -13,15 +13,8 @@ const Index = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  // Authentication state - in real app this would come from auth provider
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-
-  // Fetch user profile
-  const { data: user, isLoading: isLoadingUser } = useQuery({
-    queryKey: ['user-profile'],
-    queryFn: apiService.fetchUserProfile,
-    enabled: isAuthenticated,
-  });
+  // Use the new authentication system
+  const { isAuthenticated, user, isLoading: isAuthLoading, login, logout } = useAuth();
 
   // Fetch use cases
   const { data: useCases = [], isLoading: isLoadingUseCases } = useQuery({
@@ -131,17 +124,15 @@ const Index = () => {
     }
   };
 
-  const handleLogout = () => {
-    logger.info(LogCategory.AUTH, 'User logout initiated', { userId: user?.id });
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('hasVisitedPortal');
-    setIsAuthenticated(false);
-    logger.info(LogCategory.AUTH, 'User logged out successfully');
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-  };
+  // Handle authentication loading
+  if (isAuthLoading) {
+    logger.debug(LogCategory.AUTH, 'Authentication loading');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   // Handle unauthenticated state
   if (!isAuthenticated) {
@@ -151,25 +142,12 @@ const Index = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to access the portal</h1>
           <button
-            onClick={() => {
-              logger.info(LogCategory.AUTH, 'Demo login initiated');
-              setIsAuthenticated(true);
-            }}
+            onClick={login}
             className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors"
           >
-            Login (Demo)
+            Login
           </button>
         </div>
-      </div>
-    );
-  }
-
-  // Handle loading state
-  if (isLoadingUser) {
-    logger.debug(LogCategory.UI, 'Loading user profile');
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -182,7 +160,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header user={user} onLogout={handleLogout} />
+      <Header user={user} onLogout={logout} />
       
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Welcome Message */}
