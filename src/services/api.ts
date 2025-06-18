@@ -1,4 +1,3 @@
-
 import { mockApiService } from '../mock/mockApiService';
 import { logger, LogCategory } from '../utils/logger';
 
@@ -40,6 +39,14 @@ export interface ConsumptionRecord {
   costEur: number;
   carbonKg: number;
   occurredAt: string;
+}
+
+export interface UserActivityMetrics {
+  totalRequests: number;
+  totalTokens: number;
+  totalCost: number;
+  carbonImpact: number;
+  period: 'current_month';
 }
 
 class ApiService {
@@ -300,6 +307,35 @@ class ApiService {
       return result;
     } catch (error) {
       logger.error(LogCategory.API, 'Error fetching consumption data', error);
+      throw error;
+    }
+  }
+
+  async getUserActivityMetrics(userId: string): Promise<UserActivityMetrics> {
+    logger.info(LogCategory.API, 'Fetching user activity metrics', { userId });
+    
+    try {
+      if (USE_MOCK_API) {
+        logger.debug(LogCategory.API, 'Using mock API for user activity metrics');
+        const result = await mockApiService.getUserActivityMetrics(userId);
+        logger.info(LogCategory.API, 'User activity metrics fetched successfully', { userId });
+        return result;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/activity-metrics`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        logger.error(LogCategory.API, 'Failed to fetch user activity metrics', { status: response.status });
+        throw new Error('Failed to fetch user activity metrics');
+      }
+      
+      const result = await response.json();
+      logger.info(LogCategory.API, 'User activity metrics fetched successfully', { userId });
+      return result;
+    } catch (error) {
+      logger.error(LogCategory.API, 'Error fetching user activity metrics', error);
       throw error;
     }
   }

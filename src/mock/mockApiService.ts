@@ -1,5 +1,4 @@
-
-import { UserProfile, UseCaseSummary, ConsumptionRecord } from '../services/api';
+import { UserProfile, UseCaseSummary, ConsumptionRecord, UserActivityMetrics } from '../services/api';
 import mockData from './database.json';
 
 // Simulate network delay
@@ -158,6 +157,26 @@ class MockApiService {
     }
     
     return consumption.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
+  }
+
+  async getUserActivityMetrics(userId: string): Promise<UserActivityMetrics> {
+    await delay(600);
+    
+    // Generate realistic mock data based on the user's consumption history
+    const userConsumption = mockData.consumption.filter(c => c.userId === userId);
+    
+    const totalRequests = userConsumption.length + Math.floor(Math.random() * 50);
+    const totalTokens = userConsumption.reduce((sum, c) => sum + c.tokensUsed, 0) + Math.floor(Math.random() * 10000);
+    const totalCost = userConsumption.reduce((sum, c) => sum + c.costEur, 0) + (Math.random() * 5);
+    const carbonImpact = userConsumption.reduce((sum, c) => sum + c.carbonKg, 0) + (Math.random() * 0.1);
+    
+    return {
+      totalRequests,
+      totalTokens,
+      totalCost: Math.round(totalCost * 100) / 100,
+      carbonImpact: Math.round(carbonImpact * 10000) / 10000,
+      period: 'current_month'
+    };
   }
 }
 
