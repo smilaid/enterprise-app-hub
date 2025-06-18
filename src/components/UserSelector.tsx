@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { User, Shield, ShieldCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -23,9 +24,10 @@ interface UserSelectorProps {
   users: UserAccount[];
   currentUser: UserAccount | null;
   onUserSelect: (user: UserAccount) => void;
+  isAuthenticated?: boolean;
 }
 
-const UserSelector = ({ users, currentUser, onUserSelect }: UserSelectorProps) => {
+const UserSelector = ({ users, currentUser, onUserSelect, isAuthenticated = false }: UserSelectorProps) => {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin': return <ShieldCheck className="h-4 w-4 text-red-600" />;
@@ -49,20 +51,29 @@ const UserSelector = ({ users, currentUser, onUserSelect }: UserSelectorProps) =
     return null;
   }
 
+  // Show differently when authenticated vs not authenticated
+  const buttonText = isAuthenticated ? '👤 Test Users' : '👤 Select User to Login';
+  const buttonVariant = isAuthenticated ? 'outline' : 'default';
+  const buttonClass = isAuthenticated 
+    ? 'bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200'
+    : 'bg-blue-600 hover:bg-blue-700 text-white';
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <Dialog>
         <DialogTrigger asChild>
           <Button 
-            variant="outline"
-            className="bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200"
+            variant={buttonVariant}
+            className={buttonClass}
           >
-            👤 Test Users
+            {buttonText}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Sélectionner un utilisateur test</DialogTitle>
+            <DialogTitle>
+              {isAuthenticated ? 'Sélectionner un utilisateur test' : 'Choisir un utilisateur pour se connecter'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {users.map((user) => (
@@ -85,12 +96,19 @@ const UserSelector = ({ users, currentUser, onUserSelect }: UserSelectorProps) =
                     <p className="text-xs text-gray-500">{getRoleLabel(user.role)}</p>
                   </div>
                   {currentUser?.id === user.id && (
-                    <div className="text-blue-600 text-sm font-medium">Actuel</div>
+                    <div className="text-blue-600 text-sm font-medium">
+                      {isAuthenticated ? 'Actuel' : 'Sélectionné'}
+                    </div>
                   )}
                 </div>
               </div>
             ))}
           </div>
+          {!isAuthenticated && (
+            <div className="text-sm text-gray-500 text-center mt-4">
+              Sélectionnez un utilisateur puis cliquez sur "Se connecter"
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

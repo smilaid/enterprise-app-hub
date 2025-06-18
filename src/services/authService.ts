@@ -1,5 +1,5 @@
-
 import { logger, LogCategory } from '../utils/logger';
+import authData from '../mock/authData.json';
 
 // Feature flag for authentication
 const USE_KEYCLOAK_AUTH = import.meta.env.VITE_USE_KEYCLOAK_AUTH === 'true';
@@ -101,18 +101,27 @@ class AuthService {
     const isLoggedIn = localStorage.getItem('demo_auth_token');
     
     if (isLoggedIn) {
-      const mockUser: AuthUser = {
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        username: 'demo.user',
-        email: 'demo.user@example.com',
-        displayName: 'Demo User',
-        role: 'user',
-        groups: ['users', 'portal-access']
+      // Get the selected mock user ID from localStorage
+      const mockUserId = localStorage.getItem('mockUserId');
+      let mockUser = authData.users.find(user => user.id === mockUserId);
+      
+      // Fallback to first user if no user is selected
+      if (!mockUser) {
+        mockUser = authData.users[0];
+      }
+      
+      const authUser: AuthUser = {
+        id: mockUser.id,
+        username: mockUser.username,
+        email: mockUser.email,
+        displayName: mockUser.displayName,
+        role: mockUser.role,
+        groups: mockUser.groups
       };
       
-      this.currentUser = mockUser;
-      logger.info(LogCategory.AUTH, 'Mock authentication successful', { userId: mockUser.id });
-      return { isAuthenticated: true, user: mockUser, isLoading: false };
+      this.currentUser = authUser;
+      logger.info(LogCategory.AUTH, 'Mock authentication successful', { userId: authUser.id });
+      return { isAuthenticated: true, user: authUser, isLoading: false };
     }
     
     return { isAuthenticated: false, isLoading: false };
@@ -203,7 +212,7 @@ class AuthService {
       const logoutUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(window.location.origin)}`;
       window.location.href = logoutUrl;
     } else {
-      // Demo logout
+      // Demo logout - only remove auth token, keep user selection
       localStorage.removeItem('demo_auth_token');
       localStorage.removeItem('hasVisitedPortal');
       window.location.reload();

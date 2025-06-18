@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import Actualites from "./pages/Actualites";
 import PolitiqueIA from "./pages/PolitiqueIA";
@@ -19,8 +20,14 @@ import authData from "./mock/authData.json";
 
 const queryClient = new QueryClient();
 
-const App: React.FC = () => {
-  const [selectedUser, setSelectedUser] = useState(authData.users[0]);
+const AppContent: React.FC = () => {
+  const [selectedUser, setSelectedUser] = useState(() => {
+    // Get the user from localStorage if available, otherwise default to first user
+    const storedUserId = localStorage.getItem('mockUserId');
+    return authData.users.find(user => user.id === storedUserId) || authData.users[0];
+  });
+  
+  const { isAuthenticated } = useAuth();
 
   // Update localStorage when user changes (for mock auth)
   useEffect(() => {
@@ -30,31 +37,40 @@ const App: React.FC = () => {
   }, [selectedUser]);
 
   return (
+    <>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/actualites" element={<Actualites />} />
+        <Route path="/politique-ia" element={<PolitiqueIA />} />
+        <Route path="/formations" element={<Formations />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/aide" element={<Aide />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      
+      {/* User Selector for Development */}
+      <UserSelector
+        users={authData.users}
+        currentUser={selectedUser}
+        onUserSelect={setSelectedUser}
+        isAuthenticated={isAuthenticated}
+      />
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/actualites" element={<Actualites />} />
-              <Route path="/politique-ia" element={<PolitiqueIA />} />
-              <Route path="/formations" element={<Formations />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/aide" element={<Aide />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            
-            {/* User Selector for Development */}
-            <UserSelector
-              users={authData.users}
-              currentUser={selectedUser}
-              onUserSelect={setSelectedUser}
-            />
+            <AppContent />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
