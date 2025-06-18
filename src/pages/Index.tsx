@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
@@ -11,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { logger, LogCategory } from '../utils/logger';
 import UserActivityMetrics from '../components/UserActivityMetrics';
+import CreateUseCaseModal from '../components/CreateUseCaseModal';
 
 const Index = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -158,8 +158,13 @@ const Index = () => {
   const favoriteUseCases = sortByLastAccess(useCases.filter(uc => favorites.includes(uc.id)));
   const regularUseCases = sortByLastAccess(useCases.filter(uc => !favorites.includes(uc.id)));
 
-  // Feature flag for user activity metrics
+  // Feature flags
   const showActivityMetrics = import.meta.env.VITE_SHOW_USER_ACTIVITY_METRICS !== 'false';
+  const enableContributorFeatures = import.meta.env.VITE_ENABLE_CONTRIBUTOR_FEATURES !== 'false';
+  const enableAdminFeatures = import.meta.env.VITE_ENABLE_ADMIN_FEATURES !== 'false';
+
+  // Check user permissions
+  const canCreateUseCases = user && (user.role === 'contributor' || user.role === 'admin') && enableContributorFeatures;
 
   // Handle authentication loading
   if (isAuthLoading) {
@@ -196,7 +201,8 @@ const Index = () => {
     useCaseCount: useCases.length, 
     favoriteCount: favorites.length,
     isLoading: isLoadingUseCases,
-    showActivityMetrics
+    showActivityMetrics,
+    canCreateUseCases
   });
 
   return (
@@ -205,12 +211,27 @@ const Index = () => {
       <Header user={user} onLogout={logout} />
       
       <main id="main-content" className="max-w-6xl mx-auto px-6 py-8" role="main">
-        {/* Top Section with Welcome Message and Activity Metrics */}
+        {/* Top Section with Welcome Message, Create Button, and Activity Metrics */}
         <div className="flex justify-between items-start mb-8">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Bienvenue sur le portail <span className="text-red-600">GAÏA</span>
-            </h1>
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold text-gray-900">
+                Bienvenue sur le portail <span className="text-red-600">GAÏA</span>
+              </h1>
+              
+              {/* Create Use Case Button for Contributors */}
+              {canCreateUseCases && (
+                <div className="ml-4">
+                  <CreateUseCaseModal 
+                    userId={user.id} 
+                    onUseCaseCreated={() => {
+                      refetchUseCases();
+                      logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
+                    }} 
+                  />
+                </div>
+              )}
+            </div>
             <h2 className="text-xl text-gray-700 font-medium">
               Vos Assistants
             </h2>

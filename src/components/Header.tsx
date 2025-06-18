@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AuthUser } from '../services/authService';
 import { logger, LogCategory } from '../utils/logger';
@@ -31,6 +30,10 @@ const Header = ({ user, onLogout }: HeaderProps) => {
       onLogout();
     }
   };
+
+  // Feature flags
+  const enableAdminFeatures = import.meta.env.VITE_ENABLE_ADMIN_FEATURES !== 'false';
+  const showAdminDashboard = user && user.role === 'admin' && enableAdminFeatures;
 
   return (
     <header className="bg-white border-b border-gray-300 shadow-sm" role="banner">
@@ -87,6 +90,18 @@ const Header = ({ user, onLogout }: HeaderProps) => {
               >
                 Aide
               </Link>
+              
+              {/* Admin Dashboard Link */}
+              {showAdminDashboard && (
+                <Link 
+                  to="/dashboard" 
+                  className="text-gray-700 hover:text-red-600 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-sm flex items-center space-x-1"
+                  onClick={() => handleNavClick('dashboard')}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Tableau de bord</span>
+                </Link>
+              )}
             </nav>
 
             {/* User Profile */}

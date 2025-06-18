@@ -7,6 +7,7 @@
       "email": "demo.user@example.com",
       "displayName": "Demo User",
       "role": "user",
+      "originalRole": "user",
       "groups": ["users", "portal-access"]
     },
     {
@@ -15,6 +16,7 @@
       "email": "admin.user@example.com",
       "displayName": "Admin User",
       "role": "admin",
+      "originalRole": "admin",
       "groups": ["users", "admins", "portal-access"]
     },
     {
@@ -22,8 +24,9 @@
       "username": "john.doe",
       "email": "john.doe@example.com",
       "displayName": "John Doe",
-      "role": "user",
-      "groups": ["users", "portal-access", "beta-testers"]
+      "role": "contributor",
+      "originalRole": "contributor",
+      "groups": ["users", "contributors", "portal-access", "beta-testers"]
     }
   ]
 }

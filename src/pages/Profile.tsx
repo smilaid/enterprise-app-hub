@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { User, Settings, RotateCcw, Download, Trash2 } from 'lucide-react';
 import Header from '../components/Header';
+import RoleSwitcher from '../components/RoleSwitcher';
 import { apiService } from '../services/api';
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { logger, LogCategory } from '../utils/logger';
 
 const Profile = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [currentRole, setCurrentRole] = useState('user');
   
   // Fetch user profile
   const { data: user } = useQuery({
@@ -95,6 +96,15 @@ const Profile = () => {
       description: "Tous les logs ont été supprimés.",
     });
   };
+
+  const handleRoleChange = (newRole: string) => {
+    setCurrentRole(newRole);
+    // In a real app, this would update the user's session/token
+    logger.info(LogCategory.USER_ACTION, 'Role changed in profile', { newRole });
+  };
+
+  // Feature flags
+  const enableRoleSwitching = import.meta.env.VITE_ENABLE_ROLE_SWITCHING !== 'false';
 
   if (!isAuthenticated) {
     return (
@@ -226,6 +236,20 @@ const Profile = () => {
               )}
             </div>
           </div>
+
+          {/* Role Switching Section */}
+          {enableRoleSwitching && user && (user.role === 'contributor' || user.role === 'admin') && (
+            <div className="border-t pt-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Gestion des rôles
+              </h2>
+              <RoleSwitcher
+                currentRole={currentRole || user.role}
+                originalRole={user.role}
+                onRoleChange={handleRoleChange}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

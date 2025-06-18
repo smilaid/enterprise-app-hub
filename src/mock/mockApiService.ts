@@ -1,4 +1,4 @@
-import { UserProfile, UseCaseSummary, ConsumptionRecord, UserActivityMetrics } from '../services/api';
+import { UserProfile, UseCaseSummary, ConsumptionRecord, UserActivityMetrics, CreateUseCaseData, GlobalMetrics, UseCaseUsageStats } from '../services/api';
 import mockData from './database.json';
 
 // Simulate network delay
@@ -201,6 +201,98 @@ class MockApiService {
       carbonImpact: Math.round(carbonImpact * 10000) / 10000,
       period: 'current_month'
     };
+  }
+
+  async createUseCase(data: CreateUseCaseData): Promise<UseCaseSummary> {
+    await delay(800);
+    
+    const newUseCase: UseCaseSummary = {
+      id: crypto.randomUUID(),
+      name: data.name,
+      description: data.description,
+      status: data.status,
+      scope: data.scope,
+      ownerId: data.ownerId,
+      icon: data.icon || '🔧',
+      accessUrl: data.accessUrl,
+      guideUrl: data.guideUrl
+    };
+    
+    // Add to mock data
+    mockData.useCases.push(newUseCase);
+    
+    console.log('Created new use case:', newUseCase);
+    return newUseCase;
+  }
+
+  async getGlobalMetrics(): Promise<GlobalMetrics> {
+    await delay(600);
+    
+    // Calculate metrics from all consumption records
+    const totalRequests = mockData.consumption.length + Math.floor(Math.random() * 500);
+    const totalTokens = mockData.consumption.reduce((sum, c) => sum + c.tokensUsed, 0) + Math.floor(Math.random() * 50000);
+    const totalCost = mockData.consumption.reduce((sum, c) => sum + c.costEur, 0) + (Math.random() * 50);
+    const carbonImpact = mockData.consumption.reduce((sum, c) => sum + c.carbonKg, 0) + (Math.random() * 1);
+    
+    return {
+      totalRequests,
+      totalTokens,
+      totalCost: Math.round(totalCost * 100) / 100,
+      carbonImpact: Math.round(carbonImpact * 10000) / 10000,
+      activeUsers: mockData.users.length + Math.floor(Math.random() * 20),
+      period: 'global'
+    };
+  }
+
+  async getUseCaseUsageStats(): Promise<UseCaseUsageStats[]> {
+    await delay(700);
+    
+    // Group consumption by use case
+    const usageMap = new Map<string, { count: number; tokens: number; cost: number }>();
+    
+    mockData.consumption.forEach(record => {
+      const existing = usageMap.get(record.useCaseId) || { count: 0, tokens: 0, cost: 0 };
+      usageMap.set(record.useCaseId, {
+        count: existing.count + 1,
+        tokens: existing.tokens + record.tokensUsed,
+        cost: existing.cost + record.costEur
+      });
+    });
+    
+    // Convert to stats array
+    const stats: UseCaseUsageStats[] = [];
+    usageMap.forEach((usage, useCaseId) => {
+      const useCase = mockData.useCases.find(uc => uc.id === useCaseId);
+      if (useCase) {
+        stats.push({
+          useCaseId,
+          name: useCase.name,
+          icon: useCase.icon,
+          usageCount: usage.count,
+          totalTokens: usage.tokens,
+          totalCost: Math.round(usage.cost * 100) / 100
+        });
+      }
+    });
+    
+    // Add some random usage for use cases without consumption records
+    mockData.useCases.forEach(useCase => {
+      if (!stats.find(s => s.useCaseId === useCase.id)) {
+        const randomUsage = Math.floor(Math.random() * 10);
+        if (randomUsage > 0) {
+          stats.push({
+            useCaseId: useCase.id,
+            name: useCase.name,
+            icon: useCase.icon,
+            usageCount: randomUsage,
+            totalTokens: randomUsage * (500 + Math.floor(Math.random() * 1000)),
+            totalCost: Math.round(randomUsage * (0.01 + Math.random() * 0.05) * 100) / 100
+          });
+        }
+      }
+    });
+    
+    return stats.sort((a, b) => b.usageCount - a.usageCount);
   }
 }
 

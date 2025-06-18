@@ -49,6 +49,36 @@ export interface UserActivityMetrics {
   period: 'current_month';
 }
 
+export interface CreateUseCaseData {
+  name: string;
+  description: string;
+  icon?: string;
+  accessUrl?: string;
+  guideUrl?: string;
+  allowedGroups: string;
+  ownerId: string;
+  scope: string;
+  status: string;
+}
+
+export interface GlobalMetrics {
+  totalRequests: number;
+  totalTokens: number;
+  totalCost: number;
+  carbonImpact: number;
+  activeUsers: number;
+  period: 'global';
+}
+
+export interface UseCaseUsageStats {
+  useCaseId: string;
+  name: string;
+  icon?: string;
+  usageCount: number;
+  totalTokens: number;
+  totalCost: number;
+}
+
 class ApiService {
   private getAuthHeaders(): Record<string, string> {
     const token = localStorage.getItem('authToken');
@@ -336,6 +366,95 @@ class ApiService {
       return result;
     } catch (error) {
       logger.error(LogCategory.API, 'Error fetching user activity metrics', error);
+      throw error;
+    }
+  }
+
+  async createUseCase(data: CreateUseCaseData): Promise<UseCaseSummary> {
+    logger.info(LogCategory.API, 'Creating use case', data);
+    
+    try {
+      if (USE_MOCK_API) {
+        logger.debug(LogCategory.API, 'Using mock API for use case creation');
+        const result = await mockApiService.createUseCase(data);
+        logger.info(LogCategory.API, 'Use case created successfully', { id: result.id });
+        return result;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/use-cases`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        logger.error(LogCategory.API, 'Failed to create use case', { status: response.status });
+        throw new Error('Failed to create use case');
+      }
+      
+      const result = await response.json();
+      logger.info(LogCategory.API, 'Use case created successfully', { id: result.id });
+      return result;
+    } catch (error) {
+      logger.error(LogCategory.API, 'Error creating use case', error);
+      throw error;
+    }
+  }
+
+  async getGlobalMetrics(): Promise<GlobalMetrics> {
+    logger.info(LogCategory.API, 'Fetching global metrics');
+    
+    try {
+      if (USE_MOCK_API) {
+        logger.debug(LogCategory.API, 'Using mock API for global metrics');
+        const result = await mockApiService.getGlobalMetrics();
+        logger.info(LogCategory.API, 'Global metrics fetched successfully');
+        return result;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/admin/global-metrics`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        logger.error(LogCategory.API, 'Failed to fetch global metrics', { status: response.status });
+        throw new Error('Failed to fetch global metrics');
+      }
+      
+      const result = await response.json();
+      logger.info(LogCategory.API, 'Global metrics fetched successfully');
+      return result;
+    } catch (error) {
+      logger.error(LogCategory.API, 'Error fetching global metrics', error);
+      throw error;
+    }
+  }
+
+  async getUseCaseUsageStats(): Promise<UseCaseUsageStats[]> {
+    logger.info(LogCategory.API, 'Fetching use case usage stats');
+    
+    try {
+      if (USE_MOCK_API) {
+        logger.debug(LogCategory.API, 'Using mock API for usage stats');
+        const result = await mockApiService.getUseCaseUsageStats();
+        logger.info(LogCategory.API, 'Usage stats fetched successfully', { count: result.length });
+        return result;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/admin/usage-stats`, {
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        logger.error(LogCategory.API, 'Failed to fetch usage stats', { status: response.status });
+        throw new Error('Failed to fetch usage stats');
+      }
+      
+      const result = await response.json();
+      logger.info(LogCategory.API, 'Usage stats fetched successfully', { count: result.length });
+      return result;
+    } catch (error) {
+      logger.error(LogCategory.API, 'Error fetching usage stats', error);
       throw error;
     }
   }

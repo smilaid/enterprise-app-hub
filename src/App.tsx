@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,31 +13,53 @@ import Contact from "./pages/Contact";
 import Aide from "./pages/Aide";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Dashboard";
+import UserSelector from "./components/UserSelector";
+import authData from "./mock/authData.json";
 
 const queryClient = new QueryClient();
 
-const App: React.FC = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/actualites" element={<Actualites />} />
-            <Route path="/politique-ia" element={<PolitiqueIA />} />
-            <Route path="/formations" element={<Formations />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/aide" element={<Aide />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App: React.FC = () => {
+  const [selectedUser, setSelectedUser] = useState(authData.users[0]);
+
+  // Update localStorage when user changes (for mock auth)
+  useEffect(() => {
+    if (selectedUser) {
+      localStorage.setItem('mockUserId', selectedUser.id);
+    }
+  }, [selectedUser]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/actualites" element={<Actualites />} />
+              <Route path="/politique-ia" element={<PolitiqueIA />} />
+              <Route path="/formations" element={<Formations />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/aide" element={<Aide />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            
+            {/* User Selector for Development */}
+            <UserSelector
+              users={authData.users}
+              currentUser={selectedUser}
+              onUserSelect={setSelectedUser}
+            />
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
