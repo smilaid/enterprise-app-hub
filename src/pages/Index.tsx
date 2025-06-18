@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
@@ -19,16 +20,23 @@ const Index = () => {
   const { isAuthenticated, user, isLoading: isAuthLoading, login, logout } = useAuth();
 
   // Fetch use cases
-  const { data: useCases = [], isLoading: isLoadingUseCases } = useQuery({
+  const { data: useCases = [], isLoading: isLoadingUseCases, refetch: refetchUseCases } = useQuery({
     queryKey: ['use-cases'],
     queryFn: () => apiService.fetchUseCases(),
     enabled: isAuthenticated,
   });
 
   // Fetch favorites
-  const { data: userFavorites = [] } = useQuery({
+  const { data: userFavorites = [], refetch: refetchFavorites } = useQuery({
     queryKey: ['favorites', user?.id],
     queryFn: () => user ? apiService.getFavorites(user.id) : Promise.resolve([]),
+    enabled: !!user,
+  });
+
+  // Fetch recents for ordering
+  const { data: recents = [], refetch: refetchRecents } = useQuery({
+    queryKey: ['recents', user?.id],
+    queryFn: () => user ? apiService.getRecents(user.id) : Promise.resolve([]),
     enabled: !!user,
   });
 
@@ -69,6 +77,9 @@ const Index = () => {
           description: "Opening application...",
         });
       }
+
+      // Refetch recents to update the ordering
+      refetchRecents();
     } catch (error) {
       logger.error(LogCategory.USER_ACTION, 'Failed to access use case', { error, useCaseId, userId: user.id });
       toast({
@@ -116,6 +127,9 @@ const Index = () => {
         title: isFavorite ? "Removed from favorites" : "Added to favorites",
         description: `Use case ${isFavorite ? 'removed from' : 'added to'} your favorites.`,
       });
+
+      // Refetch favorites to ensure consistency
+      refetchFavorites();
     } catch (error) {
       logger.error(LogCategory.USER_ACTION, 'Failed to toggle favorite', { error, useCaseId, userId: user.id });
       toast({
@@ -125,6 +139,24 @@ const Index = () => {
       });
     }
   };
+
+  // Helper function to sort use cases by last access date
+  const sortByLastAccess = (useCases: UseCaseSummary[]) => {
+    return [...useCases].sort((a, b) => {
+      const aLastAccess = recents.find(r => r.useCaseId === a.id)?.lastAccessed;
+      const bLastAccess = recents.find(r => r.useCaseId === b.id)?.lastAccessed;
+      
+      if (!aLastAccess && !bLastAccess) return 0;
+      if (!aLastAccess) return 1;
+      if (!bLastAccess) return -1;
+      
+      return new Date(bLastAccess).getTime() - new Date(aLastAccess).getTime();
+    });
+  };
+
+  // Separate favorite and non-favorite use cases
+  const favoriteUseCases = sortByLastAccess(useCases.filter(uc => favorites.includes(uc.id)));
+  const regularUseCases = sortByLastAccess(useCases.filter(uc => !favorites.includes(uc.id)));
 
   // Feature flag for user activity metrics
   const showActivityMetrics = import.meta.env.VITE_SHOW_USER_ACTIVITY_METRICS !== 'false';
@@ -206,21 +238,50 @@ const Index = () => {
             </div>
           </div>
         ) : (
-          <section aria-labelledby="applications-heading">
-            <h2 id="applications-heading" className="sr-only">Liste des applications disponibles</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {useCases.map((useCase) => (
-                <UseCaseCard
-                  key={useCase.id}
-                  useCase={useCase}
-                  isFavorite={favorites.includes(useCase.id)}
-                  onAccess={handleAccess}
-                  onGuide={handleGuide}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              ))}
-            </div>
-          </section>
+          <>
+            {/* Favorite Use Cases Section */}
+            {favoriteUseCases.length > 0 && (
+              <section aria-labelledby="favorites-heading" className="mb-10">
+                <h2 id="favorites-heading" className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <span className="text-red-600 mr-2">⭐</span>
+                  Favoris
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {favoriteUseCases.map((useCase) => (
+                    <UseCaseCard
+                      key={useCase.id}
+                      useCase={useCase}
+                      isFavorite={true}
+                      onAccess={handleAccess}
+                      onGuide={handleGuide}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Regular Use Cases Section */}
+            {regularUseCases.length > 0 && (
+              <section aria-labelledby="applications-heading">
+                <h2 id="applications-heading" className="text-2xl font-bold text-gray-900 mb-6">
+                  {favoriteUseCases.length > 0 ? 'Toutes les Applications' : 'Applications Disponibles'}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regularUseCases.map((useCase) => (
+                    <UseCaseCard
+                      key={useCase.id}
+                      useCase={useCase}
+                      isFavorite={false}
+                      onAccess={handleAccess}
+                      onGuide={handleGuide}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </main>
 

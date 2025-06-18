@@ -52,6 +52,27 @@ class MockApiService {
   async logUseCaseAccess(useCaseId: string, userId: string): Promise<ConsumptionRecord> {
     await delay(300);
     
+    // Update or add recent access record
+    const existingRecentIndex = mockData.recents.findIndex(
+      recent => recent.userId === userId && recent.useCaseId === useCaseId
+    );
+    
+    const currentTime = new Date().toISOString();
+    
+    if (existingRecentIndex > -1) {
+      // Update existing recent record
+      mockData.recents[existingRecentIndex].lastAccessed = currentTime;
+    } else {
+      // Add new recent record
+      const newRecent = {
+        id: crypto.randomUUID(),
+        userId,
+        useCaseId,
+        lastAccessed: currentTime
+      };
+      mockData.recents.push(newRecent);
+    }
+    
     // Generate a new consumption record
     const newRecord: ConsumptionRecord = {
       id: crypto.randomUUID(),
@@ -60,11 +81,14 @@ class MockApiService {
       tokensUsed: Math.floor(Math.random() * 2000) + 500, // Random tokens between 500-2500
       costEur: Math.round((Math.random() * 0.05 + 0.01) * 100) / 100, // Random cost between 0.01-0.06 EUR
       carbonKg: Math.round((Math.random() * 0.003 + 0.001) * 10000) / 10000, // Random carbon between 0.001-0.004 kg
-      occurredAt: new Date().toISOString()
+      occurredAt: currentTime
     };
     
-    // In a real implementation, this would be saved to the database
+    // Add to consumption records
+    mockData.consumption.push(newRecord);
+    
     console.log('Logged use case access:', newRecord);
+    console.log('Updated recent access:', { userId, useCaseId, lastAccessed: currentTime });
     
     return newRecord;
   }
