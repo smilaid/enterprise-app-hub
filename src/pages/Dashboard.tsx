@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Users, Activity, DollarSign, Leaf } from 'lucide-react';
@@ -26,7 +25,7 @@ const Dashboard = () => {
   });
 
   if (!user || user.role !== 'admin') {
-    logger.warn(LogCategory.ACCESS_DENIED, 'Non-admin user attempted to access dashboard');
+    logger.warn(LogCategory.AUTH, 'Non-admin user attempted to access dashboard');
     return (
       <div className="min-h-screen bg-gray-100">
         <Header user={user} onLogout={logout} />

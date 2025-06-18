@@ -1,3 +1,4 @@
+
 import { UserProfile, UseCaseSummary, ConsumptionRecord, UserActivityMetrics, CreateUseCaseData, GlobalMetrics, UseCaseUsageStats } from '../services/api';
 import mockData from './database.json';
 
@@ -206,6 +207,7 @@ class MockApiService {
   async createUseCase(data: CreateUseCaseData): Promise<UseCaseSummary> {
     await delay(800);
     
+    const currentTime = new Date().toISOString();
     const newUseCase: UseCaseSummary = {
       id: crypto.randomUUID(),
       name: data.name,
@@ -218,8 +220,14 @@ class MockApiService {
       guideUrl: data.guideUrl
     };
     
-    // Add to mock data
-    mockData.useCases.push(newUseCase);
+    // Add to mock data with timestamp fields
+    const newUseCaseWithTimestamps = {
+      ...newUseCase,
+      createdAt: currentTime,
+      updatedAt: currentTime
+    };
+    
+    mockData.useCases.push(newUseCaseWithTimestamps);
     
     console.log('Created new use case:', newUseCase);
     return newUseCase;

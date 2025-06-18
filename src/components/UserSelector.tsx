@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User, Shield, ShieldCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ interface UserAccount {
   displayName: string;
   email: string;
   role: string;
+  originalRole: string;
+  groups: string[];
 }
 
 interface UserSelectorProps {
