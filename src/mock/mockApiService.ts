@@ -220,9 +220,12 @@ class MockApiService {
       guideUrl: data.guideUrl
     };
     
-    // Add to mock data with timestamp fields
+    // Add to mock data with timestamp fields and ensure all required properties are present
     const newUseCaseWithTimestamps = {
       ...newUseCase,
+      icon: newUseCase.icon || '🔧',
+      accessUrl: newUseCase.accessUrl || '',
+      guideUrl: newUseCase.guideUrl || '',
       createdAt: currentTime,
       updatedAt: currentTime
     };
