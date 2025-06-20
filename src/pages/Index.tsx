@@ -211,36 +211,38 @@ const Index = () => {
       <Header user={user} onLogout={logout} />
       
       <main id="main-content" className="max-w-6xl mx-auto px-6 py-8" role="main">
-        {/* Top Section with Welcome Message, Create Button, and Activity Metrics */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Bienvenue sur le portail <span className="text-red-600">GAÏA</span>
+        {/* Compact Top Section with side-by-side layout */}
+        <div className="mb-8">
+          {/* Top row with welcome message and action buttons */}
+          <div className="flex items-center justify-between mb-4">
+            {/* Left side - Welcome message (more compact) */}
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Bienvenue sur <span className="text-red-600">GAÏA</span>
               </h1>
-              
-              {/* Create Use Case Button for Contributors */}
-              {canCreateUseCases && (
-                <div className="ml-4">
-                  <CreateUseCaseModal 
-                    userId={user.id} 
-                    onUseCaseCreated={() => {
-                      refetchUseCases();
-                      logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
-                    }} 
-                  />
-                </div>
-              )}
+              <p className="text-gray-600 text-sm">Vos Assistants IA</p>
             </div>
-            <h2 className="text-xl text-gray-700 font-medium">
-              Vos Assistants
-            </h2>
+            
+            {/* Right side - Create button */}
+            {canCreateUseCases && (
+              <div className="flex-shrink-0">
+                <CreateUseCaseModal 
+                  userId={user.id} 
+                  onUseCaseCreated={() => {
+                    refetchUseCases();
+                    logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
+                  }} 
+                />
+              </div>
+            )}
           </div>
           
-          {/* User Activity Metrics - Feature Flag */}
+          {/* Bottom row with activity metrics (if enabled) */}
           {showActivityMetrics && user && (
-            <div className="ml-8">
-              <UserActivityMetrics userId={user.id} />
+            <div className="flex justify-end">
+              <div className="w-80">
+                <UserActivityMetrics userId={user.id} />
+              </div>
             </div>
           )}
         </div>

@@ -15,7 +15,6 @@ import Aide from "./pages/Aide";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
-import UserSelector from "./components/UserSelector";
 import authData from "./mock/authData.json";
 
 const queryClient = new QueryClient();
@@ -37,28 +36,18 @@ const AppContent: React.FC = () => {
   }, [selectedUser]);
 
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/actualites" element={<Actualites />} />
-        <Route path="/politique-ia" element={<PolitiqueIA />} />
-        <Route path="/formations" element={<Formations />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/aide" element={<Aide />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      
-      {/* User Selector for Development */}
-      <UserSelector
-        users={authData.users}
-        currentUser={selectedUser}
-        onUserSelect={setSelectedUser}
-        isAuthenticated={isAuthenticated}
-      />
-    </>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/actualites" element={<Actualites />} />
+      <Route path="/politique-ia" element={<PolitiqueIA />} />
+      <Route path="/formations" element={<Formations />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/aide" element={<Aide />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

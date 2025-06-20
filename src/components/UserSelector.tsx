@@ -89,13 +89,6 @@ const UserSelector = ({ currentUser, isAuthenticated = false }: UserSelectorProp
     setIsOpen(false);
   };
 
-  // Always show selector in development mode
-  const isDevelopment = import.meta.env.DEV;
-  
-  if (!isDevelopment) {
-    return null;
-  }
-
   // Show differently when authenticated vs not authenticated
   const buttonText = isAuthenticated ? 'Changer d\'utilisateur' : 'Sélectionner utilisateur';
 
