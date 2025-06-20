@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
@@ -211,101 +212,105 @@ const Index = () => {
       <Header user={user} onLogout={logout} />
       
       <main id="main-content" className="max-w-7xl mx-auto px-6 py-8" role="main">
-        {/* Sidebar and Main Content Layout */}
-        <div className="flex gap-8 mb-8">
-          {/* Left Sidebar - Welcome and Activity */}
-          <div className="w-80 flex-shrink-0 space-y-6">
-            {/* Welcome Section */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Bienvenue sur <span className="text-red-600">GAÏA</span>
-              </h1>
-              <p className="text-gray-600 mb-4">Vos Assistants IA</p>
-              
-              {/* Create Use Case Button */}
-              {canCreateUseCases && (
-                <div className="mt-4">
-                  <CreateUseCaseModal 
-                    userId={user.id} 
-                    onUseCaseCreated={() => {
-                      refetchUseCases();
-                      logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
-                    }} 
-                  />
-                </div>
-              )}
-            </div>
+        {/* Top Section with Welcome and Activity */}
+        <div className="flex justify-between items-start mb-8">
+          {/* Left Side - Welcome Section */}
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Bienvenue sur le portail <span className="text-red-600">GAÏA</span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-4">Vos Assistants</p>
             
-            {/* User Activity Metrics - Smaller */}
-            {showActivityMetrics && user && (
-              <div className="w-full">
-                <UserActivityMetrics userId={user.id} />
+            {/* Create Use Case Button */}
+            {canCreateUseCases && (
+              <div className="mb-4">
+                <CreateUseCaseModal 
+                  userId={user.id} 
+                  onUseCaseCreated={() => {
+                    refetchUseCases();
+                    logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
+                  }} 
+                />
               </div>
             )}
           </div>
 
-          {/* Main Content - Use Cases Grid */}
-          <div className="flex-1 min-w-0">
-            {isLoadingUseCases ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner size="lg" />
-                <span className="sr-only">Chargement des applications...</span>
-              </div>
-            ) : useCases.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-500 mb-4">
-                  <h3 className="text-lg font-medium">Aucune application trouvée</h3>
-                  <p>Aucun cas d'usage n'est actuellement disponible.</p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Favorite Use Cases Section */}
-                {favoriteUseCases.length > 0 && (
-                  <section aria-labelledby="favorites-heading" className="mb-10">
-                    <h2 id="favorites-heading" className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="text-red-600 mr-2">⭐</span>
-                      Favoris
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {favoriteUseCases.map((useCase) => (
-                        <UseCaseCard
-                          key={useCase.id}
-                          useCase={useCase}
-                          isFavorite={true}
-                          onAccess={handleAccess}
-                          onGuide={handleGuide}
-                          onToggleFavorite={handleToggleFavorite}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )}
+          {/* Right Side - User Activity Metrics */}
+          {showActivityMetrics && user && (
+            <div className="ml-8">
+              <UserActivityMetrics userId={user.id} />
+            </div>
+          )}
+        </div>
 
-                {/* Regular Use Cases Section */}
-                {regularUseCases.length > 0 && (
-                  <section aria-labelledby="applications-heading">
-                    <h2 id="applications-heading" className="text-2xl font-bold text-gray-900 mb-6">
-                      {favoriteUseCases.length > 0 ? 'Toutes les Applications' : 'Applications Disponibles'}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {regularUseCases.map((useCase) => (
-                        <UseCaseCard
-                          key={useCase.id}
-                          useCase={useCase}
-                          isFavorite={false}
-                          onAccess={handleAccess}
-                          onGuide={handleGuide}
-                          onToggleFavorite={handleToggleFavorite}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )}
-              </>
-            )}
+        {/* Search and Filter Section */}
+        <div className="mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex-1">
+              <input
+                type="search"
+                placeholder="Rechercher..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                aria-label="Rechercher des applications"
+              />
+            </div>
+            <div className="flex space-x-2">
+              <span className="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm">Récents</span>
+              <span className="px-3 py-2 bg-green-100 text-green-800 rounded-md text-sm">Favoris</span>
+            </div>
           </div>
         </div>
+
+        {/* Use Cases Grid */}
+        {isLoadingUseCases ? (
+          <div className="flex justify-center py-12">
+            <LoadingSpinner size="lg" />
+            <span className="sr-only">Chargement des applications...</span>
+          </div>
+        ) : useCases.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 mb-4">
+              <h3 className="text-lg font-medium">Aucune application trouvée</h3>
+              <p>Aucun cas d'usage n'est actuellement disponible.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Favorite Use Cases Section */}
+            {favoriteUseCases.length > 0 && (
+              <section aria-labelledby="favorites-heading" className="mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {favoriteUseCases.map((useCase) => (
+                    <UseCaseCard
+                      key={useCase.id}
+                      useCase={useCase}
+                      isFavorite={true}
+                      onAccess={handleAccess}
+                      onGuide={handleGuide}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Regular Use Cases Section */}
+            <section aria-labelledby="applications-heading">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {regularUseCases.map((useCase) => (
+                  <UseCaseCard
+                    key={useCase.id}
+                    useCase={useCase}
+                    isFavorite={false}
+                    onAccess={handleAccess}
+                    onGuide={handleGuide}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
       <WelcomeModal
