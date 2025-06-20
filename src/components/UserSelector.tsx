@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import mockUsersData from '../mock/authData.json';
 
 interface UserAccount {
   id: string;
@@ -27,7 +28,9 @@ interface UserSelectorProps {
   isAuthenticated?: boolean;
 }
 
-const UserSelector = ({ users, currentUser, onUserSelect, isAuthenticated = false }: UserSelectorProps) => {
+const UserSelector = ({ currentUser, isAuthenticated = false }: UserSelectorProps) => {
+  // Load users from mock data
+  const [users] = useState<UserAccount[]>(mockUsersData.users);
   const [selectedUser, setSelectedUser] = useState<UserAccount | null>(currentUser);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -80,20 +83,18 @@ const UserSelector = ({ users, currentUser, onUserSelect, isAuthenticated = fals
   }
 
   // Show differently when authenticated vs not authenticated
-  const buttonText = isAuthenticated ? '👤 Test Users' : '👤 Select User to Login';
-  const buttonVariant = isAuthenticated ? 'outline' : 'default';
-  const buttonClass = isAuthenticated 
-    ? 'bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200'
-    : 'bg-blue-600 hover:bg-blue-700 text-white';
+  const buttonText = isAuthenticated ? 'Changer d\'utilisateur' : 'Sélectionner utilisateur';
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="border-t pt-2">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <Button 
-            variant={buttonVariant}
-            className={buttonClass}
+            variant="ghost"
+            className="w-full justify-start text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+            size="sm"
           >
+            <User className="h-4 w-4 mr-2" />
             {buttonText}
           </Button>
         </DialogTrigger>

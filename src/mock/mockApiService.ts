@@ -1,8 +1,17 @@
+
 import { UserProfile, UseCaseSummary, ConsumptionRecord, UserActivityMetrics, CreateUseCaseData, GlobalMetrics, UseCaseUsageStats } from '../services/api';
 import mockData from './database.json';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Function to persist data to JSON file (in a real app, this would be a server call)
+const persistData = async (data: typeof mockData) => {
+  // In a real application, this would make an API call to save the data
+  // For this mock, we'll simulate persistence by updating the imported data
+  Object.assign(mockData, data);
+  console.log('Data persisted to mock database');
+};
 
 class MockApiService {
   async fetchUserProfile(): Promise<UserProfile> {
@@ -229,8 +238,11 @@ class MockApiService {
       updatedAt: currentTime
     };
     
-    // PROPERLY UPDATE THE DATABASE - this was missing before
+    // Update the database
     mockData.useCases.push(newUseCaseWithTimestamps);
+    
+    // Persist the changes
+    await persistData(mockData);
     
     console.log('Created new use case:', newUseCase);
     console.log('Total use cases in database:', mockData.useCases.length);
@@ -255,6 +267,9 @@ class MockApiService {
     
     mockData.useCases[useCaseIndex] = updatedUseCase;
     
+    // Persist the changes
+    await persistData(mockData);
+    
     console.log('Updated use case:', updatedUseCase);
     return updatedUseCase;
   }
@@ -273,6 +288,9 @@ class MockApiService {
     // Also remove related favorites and recents
     mockData.favorites = mockData.favorites.filter(fav => fav.useCaseId !== id);
     mockData.recents = mockData.recents.filter(recent => recent.useCaseId !== id);
+    
+    // Persist the changes
+    await persistData(mockData);
     
     console.log('Deleted use case:', deletedUseCase);
   }

@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { User, LogOut, Settings, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AuthUser } from '../services/authService';
 import { logger, LogCategory } from '../utils/logger';
+import UserSelector from './UserSelector';
 import {
   HoverCard,
   HoverCardContent,
@@ -155,6 +157,14 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                           </Button>
                         )}
                       </div>
+                      
+                      {/* User Selector for development */}
+                      <UserSelector 
+                        users={[]} // Will be populated by the component
+                        currentUser={user} 
+                        onUserSelect={() => {}} // Handled internally by the component
+                        isAuthenticated={true}
+                      />
                     </div>
                   </HoverCardContent>
                 </HoverCard>
