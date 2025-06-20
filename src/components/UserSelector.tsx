@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import mockUsersData from '../mock/authData.json';
+import { AuthUser } from '../services/authService';
 
 interface UserAccount {
   id: string;
@@ -23,7 +24,7 @@ interface UserAccount {
 
 interface UserSelectorProps {
   users: UserAccount[];
-  currentUser: UserAccount | null;
+  currentUser: AuthUser | null;
   onUserSelect: (user: UserAccount) => void;
   isAuthenticated?: boolean;
 }
@@ -31,12 +32,25 @@ interface UserSelectorProps {
 const UserSelector = ({ currentUser, isAuthenticated = false }: UserSelectorProps) => {
   // Load users from mock data
   const [users] = useState<UserAccount[]>(mockUsersData.users);
-  const [selectedUser, setSelectedUser] = useState<UserAccount | null>(currentUser);
+  const [selectedUser, setSelectedUser] = useState<UserAccount | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Update selected user when currentUser changes
+  // Convert AuthUser to UserAccount format when currentUser changes
   useEffect(() => {
-    setSelectedUser(currentUser);
+    if (currentUser) {
+      const userAccount: UserAccount = {
+        id: currentUser.id,
+        username: currentUser.username,
+        displayName: currentUser.displayName,
+        email: currentUser.email,
+        role: currentUser.role,
+        originalRole: currentUser.role, // Use role as originalRole for AuthUser
+        groups: currentUser.groups || []
+      };
+      setSelectedUser(userAccount);
+    } else {
+      setSelectedUser(null);
+    }
   }, [currentUser]);
 
   const getRoleIcon = (role: string) => {
