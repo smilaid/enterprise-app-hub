@@ -1,4 +1,3 @@
-
 import { UserProfile, UseCaseSummary, ConsumptionRecord, UserActivityMetrics, CreateUseCaseData, GlobalMetrics, UseCaseUsageStats } from '../services/api';
 import mockData from './database.json';
 
@@ -230,10 +229,52 @@ class MockApiService {
       updatedAt: currentTime
     };
     
+    // PROPERLY UPDATE THE DATABASE - this was missing before
     mockData.useCases.push(newUseCaseWithTimestamps);
     
     console.log('Created new use case:', newUseCase);
+    console.log('Total use cases in database:', mockData.useCases.length);
+    
     return newUseCase;
+  }
+
+  async updateUseCase(id: string, data: Partial<CreateUseCaseData>): Promise<UseCaseSummary> {
+    await delay(600);
+    
+    const useCaseIndex = mockData.useCases.findIndex(uc => uc.id === id);
+    if (useCaseIndex === -1) {
+      throw new Error('Use case not found');
+    }
+    
+    const currentUseCase = mockData.useCases[useCaseIndex];
+    const updatedUseCase = {
+      ...currentUseCase,
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+    
+    mockData.useCases[useCaseIndex] = updatedUseCase;
+    
+    console.log('Updated use case:', updatedUseCase);
+    return updatedUseCase;
+  }
+
+  async deleteUseCase(id: string): Promise<void> {
+    await delay(400);
+    
+    const useCaseIndex = mockData.useCases.findIndex(uc => uc.id === id);
+    if (useCaseIndex === -1) {
+      throw new Error('Use case not found');
+    }
+    
+    // Remove the use case
+    const deletedUseCase = mockData.useCases.splice(useCaseIndex, 1)[0];
+    
+    // Also remove related favorites and recents
+    mockData.favorites = mockData.favorites.filter(fav => fav.useCaseId !== id);
+    mockData.recents = mockData.recents.filter(recent => recent.useCaseId !== id);
+    
+    console.log('Deleted use case:', deletedUseCase);
   }
 
   async getGlobalMetrics(): Promise<GlobalMetrics> {

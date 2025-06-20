@@ -401,6 +401,65 @@ class ApiService {
     }
   }
 
+  async updateUseCase(id: string, data: Partial<CreateUseCaseData>): Promise<UseCaseSummary> {
+    logger.info(LogCategory.API, 'Updating use case', { id, data });
+    
+    try {
+      if (USE_MOCK_API) {
+        logger.debug(LogCategory.API, 'Using mock API for use case update');
+        const result = await mockApiService.updateUseCase(id, data);
+        logger.info(LogCategory.API, 'Use case updated successfully', { id: result.id });
+        return result;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/use-cases/${id}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        logger.error(LogCategory.API, 'Failed to update use case', { status: response.status });
+        throw new Error('Failed to update use case');
+      }
+      
+      const result = await response.json();
+      logger.info(LogCategory.API, 'Use case updated successfully', { id: result.id });
+      return result;
+    } catch (error) {
+      logger.error(LogCategory.API, 'Error updating use case', error);
+      throw error;
+    }
+  }
+
+  async deleteUseCase(id: string): Promise<void> {
+    logger.info(LogCategory.API, 'Deleting use case', { id });
+    
+    try {
+      if (USE_MOCK_API) {
+        logger.debug(LogCategory.API, 'Using mock API for use case deletion');
+        await mockApiService.deleteUseCase(id);
+        logger.info(LogCategory.API, 'Use case deleted successfully', { id });
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/use-cases/${id}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        logger.error(LogCategory.API, 'Failed to delete use case', { status: response.status });
+        throw new Error('Failed to delete use case');
+      }
+      
+      logger.info(LogCategory.API, 'Use case deleted successfully', { id });
+    } catch (error) {
+      logger.error(LogCategory.API, 'Error deleting use case', error);
+      throw error;
+    }
+  }
+
   async getGlobalMetrics(): Promise<GlobalMetrics> {
     logger.info(LogCategory.API, 'Fetching global metrics');
     

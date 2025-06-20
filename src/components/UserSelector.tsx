@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Shield, ShieldCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,11 @@ interface UserSelectorProps {
 const UserSelector = ({ users, currentUser, onUserSelect, isAuthenticated = false }: UserSelectorProps) => {
   const [selectedUser, setSelectedUser] = useState<UserAccount | null>(currentUser);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Update selected user when currentUser changes
+  useEffect(() => {
+    setSelectedUser(currentUser);
+  }, [currentUser]);
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -67,7 +72,7 @@ const UserSelector = ({ users, currentUser, onUserSelect, isAuthenticated = fals
     setIsOpen(false);
   };
 
-  // Only show selector in development mode
+  // Always show selector in development mode
   const isDevelopment = import.meta.env.DEV;
   
   if (!isDevelopment) {
