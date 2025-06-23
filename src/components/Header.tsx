@@ -4,6 +4,7 @@ import { User, LogOut, Settings, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AuthUser } from '../services/authService';
 import { logger, LogCategory } from '../utils/logger';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import UserSelector from './UserSelector';
 import {
   HoverCard,
@@ -18,6 +19,8 @@ interface HeaderProps {
 }
 
 const Header = ({ user, onLogout }: HeaderProps) => {
+  const { flags } = useFeatureFlags();
+
   const handleNavClick = (destination: string) => {
     logger.info(LogCategory.NAVIGATION, 'Navigation link clicked', { destination, userId: user?.id });
   };
@@ -33,9 +36,8 @@ const Header = ({ user, onLogout }: HeaderProps) => {
     }
   };
 
-  // Feature flags
-  const enableAdminFeatures = import.meta.env.VITE_ENABLE_ADMIN_FEATURES !== 'false';
-  const showAdminDashboard = user && user.role === 'admin' && enableAdminFeatures;
+  // Check if admin dashboard should be shown
+  const showAdminDashboard = user && user.role === 'admin' && flags.showAdminDashboard;
 
   return (
     <header className="bg-white border-b border-gray-300 shadow-sm" role="banner">
@@ -93,7 +95,7 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                 Aide
               </Link>
               
-              {/* Admin Dashboard Link */}
+              {/* Admin Dashboard Link - only show if feature flag is enabled */}
               {showAdminDashboard && (
                 <Link 
                   to="/dashboard" 
@@ -158,13 +160,15 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                         )}
                       </div>
                       
-                      {/* User Selector for development */}
-                      <UserSelector 
-                        users={[]} // Will be populated by the component
-                        currentUser={user} 
-                        onUserSelect={() => {}} // Handled internally by the component
-                        isAuthenticated={true}
-                      />
+                      {/* User Selector for development - only show if feature flag is enabled */}
+                      {flags.showUserSelector && (
+                        <UserSelector 
+                          users={[]} // Will be populated by the component
+                          currentUser={user} 
+                          onUserSelect={() => {}} // Handled internally by the component
+                          isAuthenticated={true}
+                        />
+                      )}
                     </div>
                   </HoverCardContent>
                 </HoverCard>

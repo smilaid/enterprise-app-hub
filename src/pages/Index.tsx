@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import SkipLink from '../components/SkipLink';
 import { apiService, UseCaseSummary } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { toast } from '@/hooks/use-toast';
 import { logger, LogCategory } from '../utils/logger';
 import UserActivityMetrics from '../components/UserActivityMetrics';
@@ -18,6 +19,9 @@ const Index = () => {
 
   // Use the new authentication system
   const { isAuthenticated, user, isLoading: isAuthLoading, login, logout } = useAuth();
+  
+  // Use feature flags
+  const { flags } = useFeatureFlags();
 
   // Fetch use cases
   const { data: useCases = [], isLoading: isLoadingUseCases, refetch: refetchUseCases } = useQuery({
@@ -158,13 +162,8 @@ const Index = () => {
   const favoriteUseCases = sortByLastAccess(useCases.filter(uc => favorites.includes(uc.id)));
   const regularUseCases = sortByLastAccess(useCases.filter(uc => !favorites.includes(uc.id)));
 
-  // Feature flags
-  const showActivityMetrics = import.meta.env.VITE_SHOW_USER_ACTIVITY_METRICS !== 'false';
-  const enableContributorFeatures = import.meta.env.VITE_ENABLE_CONTRIBUTOR_FEATURES !== 'false';
-  const enableAdminFeatures = import.meta.env.VITE_ENABLE_ADMIN_FEATURES !== 'false';
-
   // Check user permissions
-  const canCreateUseCases = user && (user.role === 'contributor' || user.role === 'admin') && enableContributorFeatures;
+  const canCreateUseCases = user && (user.role === 'contributor' || user.role === 'admin');
 
   // Handle authentication loading
   if (isAuthLoading) {
@@ -201,7 +200,7 @@ const Index = () => {
     useCaseCount: useCases.length, 
     favoriteCount: favorites.length,
     isLoading: isLoadingUseCases,
-    showActivityMetrics,
+    showActivityMetrics: flags.showUserActivityPanel,
     canCreateUseCases
   });
 
@@ -239,9 +238,9 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Right Column: User Activity Metrics - always stays in top right */}
+              {/* Right Column: User Activity Metrics - only show if feature flag is enabled */}
               <div className="flex justify-end">
-                {showActivityMetrics && user && (
+                {flags.showUserActivityPanel && user && (
                   <UserActivityMetrics userId={user.id} />
                 )}
               </div>

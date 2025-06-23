@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { User, Settings, RotateCcw, Download, Trash2 } from 'lucide-react';
 import Header from '../components/Header';
 import RoleSwitcher from '../components/RoleSwitcher';
+import FeatureFlagsManager from '../components/FeatureFlagsManager';
 import { apiService } from '../services/api';
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -236,6 +237,9 @@ const Profile = () => {
               )}
             </div>
           </div>
+
+          {/* Feature Flags Management - Only for admins */}
+          <FeatureFlagsManager />
 
           {/* Role Switching Section */}
           {enableRoleSwitching && user && (user.role === 'contributor' || user.role === 'admin') && (
