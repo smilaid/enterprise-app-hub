@@ -211,21 +211,26 @@ const Index = () => {
       <Header user={user} onLogout={logout} />
       
       <main id="main-content" className="max-w-6xl mx-auto px-6 py-8" role="main">
-        {/* Compact Top Section with side-by-side layout */}
-        <div className="mb-8">
-          {/* Top row with welcome message and action buttons */}
-          <div className="flex items-center justify-between mb-4">
-            {/* Left side - Welcome message (more compact) */}
+        {/* Top Section - Welcome, Activity, and Actions */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex items-center justify-between">
+            {/* Left side - Welcome message */}
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Bienvenue sur <span className="text-red-600">GAÏA</span>
               </h1>
-              <p className="text-gray-600 text-sm">Vos Assistants IA</p>
+              <p className="text-gray-600">Vos Assistants IA</p>
             </div>
             
-            {/* Right side - Create button */}
-            {canCreateUseCases && (
-              <div className="flex-shrink-0">
+            {/* Right side - Activity metrics and create button */}
+            <div className="flex items-center space-x-6">
+              {/* Activity Metrics */}
+              {showActivityMetrics && user && (
+                <UserActivityMetrics userId={user.id} />
+              )}
+              
+              {/* Create Use Case Button */}
+              {canCreateUseCases && (
                 <CreateUseCaseModal 
                   userId={user.id} 
                   onUseCaseCreated={() => {
@@ -233,79 +238,72 @@ const Index = () => {
                     logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
                   }} 
                 />
-              </div>
-            )}
-          </div>
-          
-          {/* Bottom row with activity metrics (if enabled) */}
-          {showActivityMetrics && user && (
-            <div className="flex justify-end">
-              <div className="w-80">
-                <UserActivityMetrics userId={user.id} />
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Use Cases Grid */}
-        {isLoadingUseCases ? (
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="lg" />
-            <span className="sr-only">Chargement des applications...</span>
-          </div>
-        ) : useCases.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
-              <h3 className="text-lg font-medium">Aucune application trouvée</h3>
-              <p>Aucun cas d'usage n'est actuellement disponible.</p>
+        {/* Use Cases Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {isLoadingUseCases ? (
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" />
+              <span className="sr-only">Chargement des applications...</span>
             </div>
-          </div>
-        ) : (
-          <>
-            {/* Favorite Use Cases Section */}
-            {favoriteUseCases.length > 0 && (
-              <section aria-labelledby="favorites-heading" className="mb-10">
-                <h2 id="favorites-heading" className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                  <span className="text-red-600 mr-2">⭐</span>
-                  Favoris
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteUseCases.map((useCase) => (
-                    <UseCaseCard
-                      key={useCase.id}
-                      useCase={useCase}
-                      isFavorite={true}
-                      onAccess={handleAccess}
-                      onGuide={handleGuide}
-                      onToggleFavorite={handleToggleFavorite}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+          ) : useCases.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500 mb-4">
+                <h3 className="text-lg font-medium">Aucune application trouvée</h3>
+                <p>Aucun cas d'usage n'est actuellement disponible.</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Favorite Use Cases Section */}
+              {favoriteUseCases.length > 0 && (
+                <section aria-labelledby="favorites-heading" className="mb-10">
+                  <h2 id="favorites-heading" className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <span className="text-red-600 mr-2">⭐</span>
+                    Favoris
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {favoriteUseCases.map((useCase) => (
+                      <UseCaseCard
+                        key={useCase.id}
+                        useCase={useCase}
+                        isFavorite={true}
+                        onAccess={handleAccess}
+                        onGuide={handleGuide}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* Regular Use Cases Section */}
-            {regularUseCases.length > 0 && (
-              <section aria-labelledby="applications-heading">
-                <h2 id="applications-heading" className="text-2xl font-bold text-gray-900 mb-6">
-                  {favoriteUseCases.length > 0 ? 'Toutes les Applications' : 'Applications Disponibles'}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {regularUseCases.map((useCase) => (
-                    <UseCaseCard
-                      key={useCase.id}
-                      useCase={useCase}
-                      isFavorite={false}
-                      onAccess={handleAccess}
-                      onGuide={handleGuide}
-                      onToggleFavorite={handleToggleFavorite}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
+              {/* Regular Use Cases Section */}
+              {regularUseCases.length > 0 && (
+                <section aria-labelledby="applications-heading">
+                  <h2 id="applications-heading" className="text-2xl font-bold text-gray-900 mb-6">
+                    {favoriteUseCases.length > 0 ? 'Toutes les Applications' : 'Applications Disponibles'}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {regularUseCases.map((useCase) => (
+                      <UseCaseCard
+                        key={useCase.id}
+                        useCase={useCase}
+                        isFavorite={false}
+                        onAccess={handleAccess}
+                        onGuide={handleGuide}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </div>
       </main>
 
       <WelcomeModal
