@@ -214,30 +214,33 @@ const Index = () => {
         {/* Top Section - Full width horizontal grid */}
         <div className="w-full bg-white border-b border-gray-200 py-8">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-              {/* Left: Welcome Message */}
-              <div className="lg:col-span-1">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  Bienvenue sur <span className="text-red-600">GAÏA</span>
-                </h1>
-                <p className="text-lg text-gray-600">Vos Assistants IA</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Left Column: Welcome Message + Create Button (stacked on mobile/tablet) */}
+              <div className="space-y-6">
+                {/* Welcome Message */}
+                <div>
+                  <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                    Bienvenue sur <span className="text-red-600">GAÏA</span>
+                  </h1>
+                  <p className="text-lg text-gray-600">Vos Assistants IA</p>
+                </div>
+                
+                {/* Create Use Case Button - appears below welcome message on smaller screens */}
+                <div className="flex justify-start">
+                  {canCreateUseCases && (
+                    <CreateUseCaseModal 
+                      userId={user.id} 
+                      onUseCaseCreated={() => {
+                        refetchUseCases();
+                        logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
+                      }} 
+                    />
+                  )}
+                </div>
               </div>
               
-              {/* Center: Create Use Case Button */}
-              <div className="lg:col-span-1 flex justify-center">
-                {canCreateUseCases && (
-                  <CreateUseCaseModal 
-                    userId={user.id} 
-                    onUseCaseCreated={() => {
-                      refetchUseCases();
-                      logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
-                    }} 
-                  />
-                )}
-              </div>
-              
-              {/* Right: User Activity Metrics */}
-              <div className="lg:col-span-1 flex justify-end">
+              {/* Right Column: User Activity Metrics - always stays in top right */}
+              <div className="flex justify-end">
                 {showActivityMetrics && user && (
                   <UserActivityMetrics userId={user.id} />
                 )}
