@@ -5,14 +5,19 @@ import mockData from './database.json';
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// In-memory store that starts with the JSON data
-let inMemoryData = JSON.parse(JSON.stringify(mockData));
+// Function to persist data to JSON file (in a real app, this would be a server call)
+const persistData = async (data: typeof mockData) => {
+  // In a real application, this would make an API call to save the data
+  // For this mock, we'll simulate persistence by updating the imported data
+  Object.assign(mockData, data);
+  console.log('Data persisted to mock database');
+};
 
 class MockApiService {
   async fetchUserProfile(): Promise<UserProfile> {
     await delay(500); // Simulate network delay
     
-    const user = inMemoryData.users[0]; // Return the first (and only) user
+    const user = mockData.users[0]; // Return the first (and only) user
     if (!user) {
       throw new Error('User not found');
     }
@@ -28,7 +33,7 @@ class MockApiService {
   }): Promise<UseCaseSummary[]> {
     await delay(800); // Simulate network delay
     
-    let useCases = [...inMemoryData.useCases];
+    let useCases = [...mockData.useCases];
     
     // Apply filters if provided
     if (params) {
@@ -57,7 +62,7 @@ class MockApiService {
     await delay(300);
     
     // Update or add recent access record
-    const existingRecentIndex = inMemoryData.recents.findIndex(
+    const existingRecentIndex = mockData.recents.findIndex(
       recent => recent.userId === userId && recent.useCaseId === useCaseId
     );
     
@@ -65,7 +70,7 @@ class MockApiService {
     
     if (existingRecentIndex > -1) {
       // Update existing recent record
-      inMemoryData.recents[existingRecentIndex].lastAccessed = currentTime;
+      mockData.recents[existingRecentIndex].lastAccessed = currentTime;
     } else {
       // Add new recent record
       const newRecent = {
@@ -74,7 +79,7 @@ class MockApiService {
         useCaseId,
         lastAccessed: currentTime
       };
-      inMemoryData.recents.push(newRecent);
+      mockData.recents.push(newRecent);
     }
     
     // Generate a new consumption record
@@ -89,7 +94,7 @@ class MockApiService {
     };
     
     // Add to consumption records
-    inMemoryData.consumption.push(newRecord);
+    mockData.consumption.push(newRecord);
     
     console.log('Logged use case access:', newRecord);
     console.log('Updated recent access:', { userId, useCaseId, lastAccessed: currentTime });
@@ -101,7 +106,7 @@ class MockApiService {
     await delay(300);
     
     // Check if already in favorites
-    const existingFavorite = inMemoryData.favorites.find(
+    const existingFavorite = mockData.favorites.find(
       fav => fav.userId === userId && fav.useCaseId === useCaseId
     );
     
@@ -109,7 +114,7 @@ class MockApiService {
       return; // Already a favorite
     }
     
-    // Add to favorites
+    // Add to favorites (in memory only for this mock)
     const newFavorite = {
       id: crypto.randomUUID(),
       userId,
@@ -117,14 +122,14 @@ class MockApiService {
       createdAt: new Date().toISOString()
     };
     
-    inMemoryData.favorites.push(newFavorite);
+    mockData.favorites.push(newFavorite);
     console.log('Added to favorites:', newFavorite);
   }
 
   async getFavorites(userId: string): Promise<string[]> {
     await delay(400);
     
-    const userFavorites = inMemoryData.favorites
+    const userFavorites = mockData.favorites
       .filter(fav => fav.userId === userId)
       .map(fav => fav.useCaseId);
     
@@ -134,13 +139,13 @@ class MockApiService {
   async removeFavorite(userId: string, useCaseId: string): Promise<void> {
     await delay(300);
     
-    // Remove from favorites
-    const index = inMemoryData.favorites.findIndex(
+    // Remove from favorites (in memory only for this mock)
+    const index = mockData.favorites.findIndex(
       fav => fav.userId === userId && fav.useCaseId === useCaseId
     );
     
     if (index > -1) {
-      inMemoryData.favorites.splice(index, 1);
+      mockData.favorites.splice(index, 1);
       console.log('Removed from favorites:', { userId, useCaseId });
     }
   }
@@ -148,7 +153,7 @@ class MockApiService {
   async getRecents(userId: string): Promise<Array<{ useCaseId: string; lastAccessed: string }>> {
     await delay(350);
     
-    const userRecents = inMemoryData.recents
+    const userRecents = mockData.recents
       .filter(recent => recent.userId === userId)
       .map(recent => ({
         useCaseId: recent.useCaseId,
@@ -167,7 +172,7 @@ class MockApiService {
   }): Promise<ConsumptionRecord[]> {
     await delay(600);
     
-    let consumption = [...inMemoryData.consumption];
+    let consumption = [...mockData.consumption];
     
     if (params) {
       if (params.userId) {
@@ -191,7 +196,7 @@ class MockApiService {
     await delay(600);
     
     // Generate realistic mock data based on the user's consumption history
-    const userConsumption = inMemoryData.consumption.filter(c => c.userId === userId);
+    const userConsumption = mockData.consumption.filter(c => c.userId === userId);
     
     const totalRequests = userConsumption.length + Math.floor(Math.random() * 50);
     const totalTokens = userConsumption.reduce((sum, c) => sum + c.tokensUsed, 0) + Math.floor(Math.random() * 10000);
@@ -223,7 +228,7 @@ class MockApiService {
       guideUrl: data.guideUrl
     };
     
-    // Add to in-memory data with timestamp fields
+    // Add to mock data with timestamp fields and ensure all required properties are present
     const newUseCaseWithTimestamps = {
       ...newUseCase,
       icon: newUseCase.icon || '🔧',
@@ -233,11 +238,14 @@ class MockApiService {
       updatedAt: currentTime
     };
     
-    // Update the in-memory database
-    inMemoryData.useCases.push(newUseCaseWithTimestamps);
+    // Update the database
+    mockData.useCases.push(newUseCaseWithTimestamps);
+    
+    // Persist the changes
+    await persistData(mockData);
     
     console.log('Created new use case:', newUseCase);
-    console.log('Total use cases in database:', inMemoryData.useCases.length);
+    console.log('Total use cases in database:', mockData.useCases.length);
     
     return newUseCase;
   }
@@ -245,19 +253,22 @@ class MockApiService {
   async updateUseCase(id: string, data: Partial<CreateUseCaseData>): Promise<UseCaseSummary> {
     await delay(600);
     
-    const useCaseIndex = inMemoryData.useCases.findIndex(uc => uc.id === id);
+    const useCaseIndex = mockData.useCases.findIndex(uc => uc.id === id);
     if (useCaseIndex === -1) {
       throw new Error('Use case not found');
     }
     
-    const currentUseCase = inMemoryData.useCases[useCaseIndex];
+    const currentUseCase = mockData.useCases[useCaseIndex];
     const updatedUseCase = {
       ...currentUseCase,
       ...data,
       updatedAt: new Date().toISOString()
     };
     
-    inMemoryData.useCases[useCaseIndex] = updatedUseCase;
+    mockData.useCases[useCaseIndex] = updatedUseCase;
+    
+    // Persist the changes
+    await persistData(mockData);
     
     console.log('Updated use case:', updatedUseCase);
     return updatedUseCase;
@@ -266,17 +277,20 @@ class MockApiService {
   async deleteUseCase(id: string): Promise<void> {
     await delay(400);
     
-    const useCaseIndex = inMemoryData.useCases.findIndex(uc => uc.id === id);
+    const useCaseIndex = mockData.useCases.findIndex(uc => uc.id === id);
     if (useCaseIndex === -1) {
       throw new Error('Use case not found');
     }
     
     // Remove the use case
-    const deletedUseCase = inMemoryData.useCases.splice(useCaseIndex, 1)[0];
+    const deletedUseCase = mockData.useCases.splice(useCaseIndex, 1)[0];
     
     // Also remove related favorites and recents
-    inMemoryData.favorites = inMemoryData.favorites.filter(fav => fav.useCaseId !== id);
-    inMemoryData.recents = inMemoryData.recents.filter(recent => recent.useCaseId !== id);
+    mockData.favorites = mockData.favorites.filter(fav => fav.useCaseId !== id);
+    mockData.recents = mockData.recents.filter(recent => recent.useCaseId !== id);
+    
+    // Persist the changes
+    await persistData(mockData);
     
     console.log('Deleted use case:', deletedUseCase);
   }
@@ -285,17 +299,17 @@ class MockApiService {
     await delay(600);
     
     // Calculate metrics from all consumption records
-    const totalRequests = inMemoryData.consumption.length + Math.floor(Math.random() * 500);
-    const totalTokens = inMemoryData.consumption.reduce((sum, c) => sum + c.tokensUsed, 0) + Math.floor(Math.random() * 50000);
-    const totalCost = inMemoryData.consumption.reduce((sum, c) => sum + c.costEur, 0) + (Math.random() * 50);
-    const carbonImpact = inMemoryData.consumption.reduce((sum, c) => sum + c.carbonKg, 0) + (Math.random() * 1);
+    const totalRequests = mockData.consumption.length + Math.floor(Math.random() * 500);
+    const totalTokens = mockData.consumption.reduce((sum, c) => sum + c.tokensUsed, 0) + Math.floor(Math.random() * 50000);
+    const totalCost = mockData.consumption.reduce((sum, c) => sum + c.costEur, 0) + (Math.random() * 50);
+    const carbonImpact = mockData.consumption.reduce((sum, c) => sum + c.carbonKg, 0) + (Math.random() * 1);
     
     return {
       totalRequests,
       totalTokens,
       totalCost: Math.round(totalCost * 100) / 100,
       carbonImpact: Math.round(carbonImpact * 10000) / 10000,
-      activeUsers: inMemoryData.users.length + Math.floor(Math.random() * 20),
+      activeUsers: mockData.users.length + Math.floor(Math.random() * 20),
       period: 'global'
     };
   }
@@ -306,7 +320,7 @@ class MockApiService {
     // Group consumption by use case
     const usageMap = new Map<string, { count: number; tokens: number; cost: number }>();
     
-    inMemoryData.consumption.forEach(record => {
+    mockData.consumption.forEach(record => {
       const existing = usageMap.get(record.useCaseId) || { count: 0, tokens: 0, cost: 0 };
       usageMap.set(record.useCaseId, {
         count: existing.count + 1,
@@ -318,7 +332,7 @@ class MockApiService {
     // Convert to stats array
     const stats: UseCaseUsageStats[] = [];
     usageMap.forEach((usage, useCaseId) => {
-      const useCase = inMemoryData.useCases.find(uc => uc.id === useCaseId);
+      const useCase = mockData.useCases.find(uc => uc.id === useCaseId);
       if (useCase) {
         stats.push({
           useCaseId,
@@ -332,7 +346,7 @@ class MockApiService {
     });
     
     // Add some random usage for use cases without consumption records
-    inMemoryData.useCases.forEach(useCase => {
+    mockData.useCases.forEach(useCase => {
       if (!stats.find(s => s.useCaseId === useCase.id)) {
         const randomUsage = Math.floor(Math.random() * 10);
         if (randomUsage > 0) {
