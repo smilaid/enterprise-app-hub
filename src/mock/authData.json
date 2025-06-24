@@ -10,23 +10,5 @@
       "originalRole": "admin",
       "groups": ["users", "admins", "portal-access"]
     },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "username": "demo.user",
-      "email": "demo.user@example.com",
-      "displayName": "Demo User",
-      "role": "user",
-      "originalRole": "user",
-      "groups": ["users", "portal-access"]
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440002",
-      "username": "john.doe",
-      "email": "john.doe@example.com",
-      "displayName": "John Doe",
-      "role": "contributor",
-      "originalRole": "contributor",
-      "groups": ["users", "contributors", "portal-access", "beta-testers"]
-    }
   ]
 }
