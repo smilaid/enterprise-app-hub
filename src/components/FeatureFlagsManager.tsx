@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { Settings, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { logger, LogCategory } from '../utils/logger';
 
 const FeatureFlagsManager = () => {
-  const { flags, updateFlag, isAdmin } = useFeatureFlags();
+  const { flags, updateFlag, isAdmin, isViewingAsUser, toggleAdminView } = useFeatureFlags();
 
   if (!isAdmin) {
     return null;
@@ -29,9 +30,9 @@ const FeatureFlagsManager = () => {
       description: 'Afficher le lien vers le tableau de bord dans le menu principal',
     },
     {
-      key: 'showUserSelector' as const,
-      title: 'Sélecteur d\'utilisateur',
-      description: 'Afficher le bouton de changement d\'utilisateur dans les informations utilisateur',
+      key: 'showAdminViewToggle' as const,
+      title: 'Bouton de vue utilisateur',
+      description: 'Afficher le bouton pour basculer entre vue admin et vue utilisateur',
     },
   ];
 
@@ -41,6 +42,38 @@ const FeatureFlagsManager = () => {
         <Settings className="h-5 w-5 mr-2" />
         Gestion des fonctionnalités (Admin)
       </h2>
+      
+      {/* Admin View Toggle */}
+      {flags.showAdminViewToggle && (
+        <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="font-medium text-purple-900">Vue administrateur</h3>
+              <p className="text-sm text-purple-800">
+                {isViewingAsUser ? 'Actuellement en vue utilisateur' : 'Actuellement en vue administrateur'}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleAdminView}
+              className="flex items-center space-x-2"
+            >
+              {isViewingAsUser ? (
+                <>
+                  <Eye className="h-4 w-4" />
+                  <span>Vue Admin</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-4 w-4" />
+                  <span>Vue Utilisateur</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
       
       <div className="space-y-4">
         {featureOptions.map((option) => (

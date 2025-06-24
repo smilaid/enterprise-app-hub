@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { User, LogOut, Settings, BarChart3 } from 'lucide-react';
+import { User, LogOut, Settings, BarChart3, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AuthUser } from '../services/authService';
 import { logger, LogCategory } from '../utils/logger';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
-import UserSelector from './UserSelector';
 import {
   HoverCard,
   HoverCardContent,
@@ -19,7 +18,7 @@ interface HeaderProps {
 }
 
 const Header = ({ user, onLogout }: HeaderProps) => {
-  const { flags } = useFeatureFlags();
+  const { flags, isViewingAsUser, toggleAdminView } = useFeatureFlags();
 
   const handleNavClick = (destination: string) => {
     logger.info(LogCategory.NAVIGATION, 'Navigation link clicked', { destination, userId: user?.id });
@@ -36,11 +35,11 @@ const Header = ({ user, onLogout }: HeaderProps) => {
     }
   };
 
-  // Check if admin dashboard should be shown
-  const showAdminDashboard = user && user.role === 'admin' && flags.showAdminDashboard;
+  // Check if admin dashboard should be shown (considering admin view toggle)
+  const showAdminDashboard = user && user.role === 'admin' && flags.showAdminDashboard && !isViewingAsUser;
 
   return (
-    <header className="bg-white border-b border-gray-300 shadow-sm" role="banner">
+    <header className="bg-white shadow-sm" role="banner">
       <div className="max-w-full mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo on the left */}
@@ -95,7 +94,7 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                 Aide
               </Link>
               
-              {/* Admin Dashboard Link - only show if feature flag is enabled */}
+              {/* Admin Dashboard Link - only show if feature flag is enabled and not viewing as user */}
               {showAdminDashboard && (
                 <Link 
                   to="/dashboard" 
@@ -117,24 +116,30 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                       className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                       aria-label={`Menu utilisateur de ${user.displayName}`}
                     >
-                      <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center border" aria-hidden="true">
+                      <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center" aria-hidden="true">
                         <User className="h-4 w-4 text-gray-600" />
                       </div>
                       <div className="text-sm">
                         <p className="text-gray-900 font-medium">{user.displayName}</p>
+                        {isViewingAsUser && (
+                          <p className="text-xs text-purple-600">Vue utilisateur</p>
+                        )}
                       </div>
                     </button>
                   </HoverCardTrigger>
                   <HoverCardContent className="w-64" align="end">
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center border" aria-hidden="true">
+                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center" aria-hidden="true">
                           <User className="h-5 w-5 text-gray-600" />
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{user.displayName}</p>
                           <p className="text-sm text-gray-500">{user.email}</p>
                           <p className="text-xs text-gray-400">{user.role}</p>
+                          {isViewingAsUser && (
+                            <p className="text-xs text-purple-600 font-medium">Mode utilisateur</p>
+                          )}
                         </div>
                       </div>
                       
@@ -145,6 +150,28 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                             Voir le profil
                           </Button>
                         </Link>
+                        
+                        {/* Admin View Toggle - only show if feature flag is enabled and user is admin */}
+                        {user.role === 'admin' && flags.showAdminViewToggle && (
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start text-purple-600 hover:text-purple-700 hover:bg-purple-50" 
+                            size="sm"
+                            onClick={toggleAdminView}
+                          >
+                            {isViewingAsUser ? (
+                              <>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Vue Admin
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-2" />
+                                Vue Utilisateur
+                              </>
+                            )}
+                          </Button>
+                        )}
                         
                         {onLogout && (
                           <Button 
@@ -159,16 +186,6 @@ const Header = ({ user, onLogout }: HeaderProps) => {
                           </Button>
                         )}
                       </div>
-                      
-                      {/* User Selector for development - only show if feature flag is enabled */}
-                      {flags.showUserSelector && (
-                        <UserSelector 
-                          users={[]} // Will be populated by the component
-                          currentUser={user} 
-                          onUserSelect={() => {}} // Handled internally by the component
-                          isAuthenticated={true}
-                        />
-                      )}
                     </div>
                   </HoverCardContent>
                 </HoverCard>

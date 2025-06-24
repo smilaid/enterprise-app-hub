@@ -5,13 +5,15 @@ import { logger, LogCategory } from '../utils/logger';
 interface FeatureFlags {
   showUserActivityPanel: boolean;
   showAdminDashboard: boolean;
-  showUserSelector: boolean;
+  showAdminViewToggle: boolean;
 }
 
 interface FeatureFlagsContextType {
   flags: FeatureFlags;
   updateFlag: (key: keyof FeatureFlags, value: boolean) => void;
   isAdmin: boolean;
+  isViewingAsUser: boolean;
+  toggleAdminView: () => void;
 }
 
 const FeatureFlagsContext = createContext<FeatureFlagsContextType | undefined>(undefined);
@@ -19,7 +21,7 @@ const FeatureFlagsContext = createContext<FeatureFlagsContextType | undefined>(u
 const DEFAULT_FLAGS: FeatureFlags = {
   showUserActivityPanel: false,
   showAdminDashboard: false,
-  showUserSelector: false,
+  showAdminViewToggle: false,
 };
 
 interface FeatureFlagsProviderProps {
@@ -29,6 +31,7 @@ interface FeatureFlagsProviderProps {
 
 export const FeatureFlagsProvider = ({ children, isAdmin }: FeatureFlagsProviderProps) => {
   const [flags, setFlags] = useState<FeatureFlags>(DEFAULT_FLAGS);
+  const [isViewingAsUser, setIsViewingAsUser] = useState(false);
 
   useEffect(() => {
     // Load flags from localStorage for admin users
@@ -43,9 +46,16 @@ export const FeatureFlagsProvider = ({ children, isAdmin }: FeatureFlagsProvider
           logger.error(LogCategory.SYSTEM, 'Failed to parse feature flags from localStorage', error);
         }
       }
+      
+      // Load admin view state
+      const savedViewState = localStorage.getItem('adminViewAsUser');
+      if (savedViewState === 'true') {
+        setIsViewingAsUser(true);
+      }
     } else {
       // Non-admin users always have flags disabled
       setFlags(DEFAULT_FLAGS);
+      setIsViewingAsUser(false);
     }
   }, [isAdmin]);
 
@@ -62,8 +72,24 @@ export const FeatureFlagsProvider = ({ children, isAdmin }: FeatureFlagsProvider
     logger.info(LogCategory.USER_ACTION, 'Feature flag updated', { key, value, userId: 'admin' });
   };
 
+  const toggleAdminView = () => {
+    if (!isAdmin) return;
+    
+    const newViewState = !isViewingAsUser;
+    setIsViewingAsUser(newViewState);
+    localStorage.setItem('adminViewAsUser', newViewState.toString());
+    
+    logger.info(LogCategory.USER_ACTION, 'Admin view toggled', { isViewingAsUser: newViewState });
+  };
+
   return (
-    <FeatureFlagsContext.Provider value={{ flags, updateFlag, isAdmin }}>
+    <FeatureFlagsContext.Provider value={{ 
+      flags, 
+      updateFlag, 
+      isAdmin, 
+      isViewingAsUser, 
+      toggleAdminView 
+    }}>
       {children}
     </FeatureFlagsContext.Provider>
   );

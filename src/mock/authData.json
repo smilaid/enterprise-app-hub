@@ -9,6 +9,6 @@
       "role": "admin",
       "originalRole": "admin",
       "groups": ["users", "admins", "portal-access"]
-    },
+    }
   ]
 }

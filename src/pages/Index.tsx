@@ -21,7 +21,7 @@ const Index = () => {
   const { isAuthenticated, user, isLoading: isAuthLoading, login, logout } = useAuth();
   
   // Use feature flags
-  const { flags } = useFeatureFlags();
+  const { flags, isViewingAsUser } = useFeatureFlags();
 
   // Fetch use cases
   const { data: useCases = [], isLoading: isLoadingUseCases, refetch: refetchUseCases } = useQuery({
@@ -162,8 +162,12 @@ const Index = () => {
   const favoriteUseCases = sortByLastAccess(useCases.filter(uc => favorites.includes(uc.id)));
   const regularUseCases = sortByLastAccess(useCases.filter(uc => !favorites.includes(uc.id)));
 
-  // Check user permissions
-  const canCreateUseCases = user && (user.role === 'contributor' || user.role === 'admin');
+  // Check user permissions (considering admin view toggle)
+  const effectiveRole = (user?.role === 'admin' && isViewingAsUser) ? 'user' : user?.role;
+  const canCreateUseCases = user && !isViewingAsUser && (user.role === 'contributor' || user.role === 'admin');
+
+  // Show activity panel only if flag is enabled and not viewing as user
+  const showActivityPanel = flags.showUserActivityPanel && !isViewingAsUser;
 
   // Handle authentication loading
   if (isAuthLoading) {
@@ -200,32 +204,46 @@ const Index = () => {
     useCaseCount: useCases.length, 
     favoriteCount: favorites.length,
     isLoading: isLoadingUseCases,
-    showActivityMetrics: flags.showUserActivityPanel,
-    canCreateUseCases
+    showActivityMetrics: showActivityPanel,
+    canCreateUseCases,
+    isViewingAsUser
   });
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <SkipLink />
       <Header user={user} onLogout={logout} />
       
       <main id="main-content" role="main">
         {/* Top Section - Full width horizontal grid */}
-        <div className="w-full bg-white border-b border-gray-200 py-8">
+        <div className="w-full bg-white py-12">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              {/* Left Column: Welcome Message + Create Button (stacked on mobile/tablet) */}
-              <div className="space-y-6">
+              {/* Left Column: Welcome Message + Create Button */}
+              <div className="space-y-8">
                 {/* Welcome Message */}
                 <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                    Bienvenue sur <span className="text-red-600">GAÏA</span>
+                  <h1 className="text-5xl font-light text-gray-900 mb-3">
+                    Bienvenue sur <span className="text-red-600 font-medium">GAÏA</span>
                   </h1>
-                  <p className="text-lg text-gray-600">Vos Assistants IA</p>
+                  <p className="text-xl text-gray-500 font-light">Vos Assistants IA</p>
                 </div>
                 
-                {/* Create Use Case Button - appears below welcome message on smaller screens */}
-                <div className="flex justify-start">
+                {/* Create Use Case Button - Mobile: below welcome, Desktop: same line */}
+                <div className="lg:hidden">
+                  {canCreateUseCases && (
+                    <CreateUseCaseModal 
+                      userId={user.id} 
+                      onUseCaseCreated={() => {
+                        refetchUseCases();
+                        logger.info(LogCategory.USER_ACTION, 'Use case created, refreshing list');
+                      }} 
+                    />
+                  )}
+                </div>
+                
+                {/* Desktop Create Button */}
+                <div className="hidden lg:block">
                   {canCreateUseCases && (
                     <CreateUseCaseModal 
                       userId={user.id} 
@@ -238,9 +256,9 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Right Column: User Activity Metrics - only show if feature flag is enabled */}
+              {/* Right Column: User Activity Metrics */}
               <div className="flex justify-end">
-                {flags.showUserActivityPanel && user && (
+                {showActivityPanel && user && (
                   <UserActivityMetrics userId={user.id} />
                 )}
               </div>
@@ -249,27 +267,27 @@ const Index = () => {
         </div>
 
         {/* Use Cases Section */}
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="bg-white rounded-2xl shadow-sm p-8">
             {isLoadingUseCases ? (
-              <div className="flex justify-center py-12">
+              <div className="flex justify-center py-16">
                 <LoadingSpinner size="lg" />
                 <span className="sr-only">Chargement des applications...</span>
               </div>
             ) : useCases.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-500 mb-4">
-                  <h3 className="text-lg font-medium">Aucune application trouvée</h3>
-                  <p>Aucun cas d'usage n'est actuellement disponible.</p>
+              <div className="text-center py-16">
+                <div className="text-gray-400 mb-4">
+                  <h3 className="text-xl font-light">Aucune application trouvée</h3>
+                  <p className="font-light">Aucun cas d'usage n'est actuellement disponible.</p>
                 </div>
               </div>
             ) : (
               <>
                 {/* Favorite Use Cases Section */}
                 {favoriteUseCases.length > 0 && (
-                  <section aria-labelledby="favorites-heading" className="mb-10">
-                    <h2 id="favorites-heading" className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <span className="text-red-600 mr-2">⭐</span>
+                  <section aria-labelledby="favorites-heading" className="mb-12">
+                    <h2 id="favorites-heading" className="text-3xl font-light text-gray-900 mb-8 flex items-center">
+                      <span className="text-red-600 mr-3">⭐</span>
                       Favoris
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -290,7 +308,7 @@ const Index = () => {
                 {/* Regular Use Cases Section */}
                 {regularUseCases.length > 0 && (
                   <section aria-labelledby="applications-heading">
-                    <h2 id="applications-heading" className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 id="applications-heading" className="text-3xl font-light text-gray-900 mb-8">
                       {favoriteUseCases.length > 0 ? 'Toutes les Applications' : 'Applications Disponibles'}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
